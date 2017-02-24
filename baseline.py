@@ -3,7 +3,7 @@ import operator
 import pandas as pd
 from collections import Counter
 
-path_to_data = "./"
+path_to_data = "input/"
 
 ##########################
 # load some of the files #                           
@@ -95,7 +95,7 @@ for index, row in test.iterrows():
 # write predictions in proper format for Kaggle #                           
 #################################################
 
-path_to_results = "./"
+path_to_results = "output/"
 
 with open(path_to_results + 'predictions_random.txt', 'w') as my_file:
     my_file.write('mid,recipients' + '\n')
