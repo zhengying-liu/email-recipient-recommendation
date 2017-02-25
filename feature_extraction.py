@@ -17,18 +17,20 @@ import numpy
 def build_corpus(dic):
     corpus = list()
     mids = list()
+    recipients = list()
     for i in dic.items():
         mids.append(i[0])
         corpus.append(' '.join(i[1]['body']))
-    return corpus, mids
+        recipients.append(i[1]['recipients'])
+    return corpus, mids, recipients
 
 
-def get_bag_words(corpus, mids):
+def get_bag_words(corpus, mids, recipients):
     count_vect = CountVectorizer()
     X = count_vect.fit_transform(corpus)
     d = dict()
     for i in range(len(mids)):
-       d[mids[i]] = X[i]
+       d[mids[i]] = {'vector': X[i], 'recipients': recipients[i]}
     return d
 
 def get_word2vec(info):
@@ -52,7 +54,7 @@ def get_word2vec(info):
 if __name__ == "__main__":
     data_info = read_data_info(nrows=50)
 
-    corpus, mids = build_corpus(data_info)
-    bag_of_words = get_bag_words(corpus, mids)
+    corpus, mids, recipients = build_corpus(data_info)
+    bag_of_words = get_bag_words(corpus, mids, recipients)
 
     get_word2vec = get_word2vec(data_info)
