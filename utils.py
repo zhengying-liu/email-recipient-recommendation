@@ -21,7 +21,8 @@ def clean_text_simple(text, remove_stopwords=True, pos_filtering=True, stemming=
     # convert to lower case
     text = text.lower()
     # remove punctuation (preserving intra-word dashes)
-    text = ''.join(l for l in text if l not in punct)
+    replace_punctuation = str.maketrans(punct, ' ' * len(punct))
+    text = text.translate(replace_punctuation)
     # strip extra white space
     text = re.sub(' +',' ',text)
     # strip leading and trailing white space
@@ -30,6 +31,7 @@ def clean_text_simple(text, remove_stopwords=True, pos_filtering=True, stemming=
     ### fill the gap ###
     tokens = text.split(' ')
     tokens = [token for token in tokens if token != '']
+
     if pos_filtering == True:
         tagged_tokens = pos_tag(tokens)
         tokens_keep = []
@@ -46,10 +48,12 @@ def clean_text_simple(text, remove_stopwords=True, pos_filtering=True, stemming=
             ):
                 tokens_keep.append(item[0])
         tokens = tokens_keep
+
     if remove_stopwords:
         stpwds = stopwords.words('english')
         # remove stopwords
         tokens = [t for t in tokens if t not in stpwds]
+
     if stemming:
         stemmer = nltk.stem.PorterStemmer()
         # apply Porter's stemmer
