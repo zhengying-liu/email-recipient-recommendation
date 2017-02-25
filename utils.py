@@ -64,8 +64,11 @@ def clean_text_simple(text, remove_stopwords=True, pos_filtering=True, stemming=
 
     return tokens
 
-def read_data_info(filename="input/training_info.csv", nrows=20):
-    info = pd.read_csv(filename, sep=',', header=0, nrows=nrows)
+def read_data_info(filename="input/training_info.csv", nrows=None):
+    if nrows is None:
+        info = pd.read_csv(filename, sep=',', header=0)
+    else:
+        info = pd.read_csv(filename, sep=',', header=0, nrows=nrows)
     info_dict = {}
 
     for index, series in tqdm(info.iterrows()):
