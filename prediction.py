@@ -53,8 +53,7 @@ def predict_for_each_message(recipient_vector_df, message_vector):
     return ' '.join(first_10)
 
 def predict_for_test_info(test_info, recipient_vector_df, count_vect, path="pred.txt"):
-    func1 = lambda row: count_vect.transform(row.body)
-    test_info["vector"] = test_info.apply(func1,axis=1)
+    test_info["vector"] =count_vect.transform(test_info.body.values)
     func2 = lambda row: predict_for_each_message(recipient_vector_df, row.vector)
     test_info["recipients"] = test_info.apply(func2,axis=1)
     pred_df = test_info[["mid","recipients"]]
@@ -62,7 +61,7 @@ def predict_for_test_info(test_info, recipient_vector_df, count_vect, path="pred
     
 
 if __name__ == "__main__":
-    data_info = read_data_info(nrows=50)
+    data_info = read_data_info(nrows=50000)
     corpus, mids, recipients = build_corpus(data_info)
     bag_of_words, count_vect = get_bag_words(corpus, mids, recipients)
     
