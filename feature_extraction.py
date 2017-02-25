@@ -24,15 +24,16 @@ def build_corpus(dic):
         recipients.append(i[1]['recipients'])
     return corpus, mids, recipients
 
-
+    
 def get_bag_words(corpus, mids, recipients):
     count_vect = CountVectorizer()
     X = count_vect.fit_transform(corpus)
     d = dict()
     for i in range(len(mids)):
        d[mids[i]] = {'vector': X[i], 'recipients': recipients[i]}
-    return d
+    return d, count_vect
 
+    
 def get_word2vec(info):
     model = KeyedVectors.load_word2vec_format('text.model.bin', binary=True)
     d = dict()
@@ -51,10 +52,22 @@ def get_word2vec(info):
 
     return d
 
+    
+def group_by_recipient(dic):
+    d = dict()
+    for k, v in dic.items():
+        for rec in v['recipients']:
+            d[rec] = []
+    for k, v in dic.items():
+        for rec in v['recipients']:
+            d[rec].append((k, v['vector']))        
+    return d
+
+    
 if __name__ == "__main__":
     data_info = read_data_info(nrows=50)
 
     corpus, mids, recipients = build_corpus(data_info)
-    bag_of_words = get_bag_words(corpus, mids, recipients)
+    bag_of_words, _ = get_bag_words(corpus, mids, recipients)
 
     get_word2vec = get_word2vec(data_info)
