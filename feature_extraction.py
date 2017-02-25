@@ -65,12 +65,12 @@ def group_by_recipient(dic):
 
     
 if __name__ == "__main__":
-#    data_info = read_data_info(nrows=50)
-#
-#    corpus, mids, recipients = build_corpus(data_info)
-#    bag_of_words, _ = get_bag_words(corpus, mids, recipients)
+    data_info = read_data_info(nrows=50)
+
+    corpus, mids, recipients = build_corpus(data_info)
+    bag_of_words, _ = get_bag_words(corpus, mids, recipients)
     
-#    recipient_dict = group_by_recipient(bag_of_words)
+    recipient_dict = group_by_recipient(bag_of_words)
     print(type(bag_of_words))
     
     
