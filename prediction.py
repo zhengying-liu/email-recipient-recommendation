@@ -22,7 +22,12 @@ def vector_average(recipient_dict):
     return d
 
 def dict_to_dataframe(d):
-    res = pd.DataFrame()
+    res = pd.DataFrame({"recipient":[], "vector":[]})
+    i = 0
+    for k,v in d.items():
+        res.loc[i] = [k, v]
+        i += 1
+    return res
 
 def cos_similarity(vec_csr1, vec_csr2):
     scalar_product = vec_csr1.dot(vec_csr2.T)[0,0]
@@ -54,5 +59,4 @@ def predict_for_test_info(test_info, recipient_vector_df, count_vect, path="pred
 
 if __name__ == "__main__":
     recipient_vector_df = dict_to_dataframe(bag_of_words)
-    
     
