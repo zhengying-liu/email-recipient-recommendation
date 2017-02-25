@@ -94,9 +94,13 @@ ENV/
 .ropeproject
 *.swp
 
+<<<<<<< Updated upstream
 text.model.bin
 text8
 text8.model
 text8.model.syn1neg.npy
 text8.model.wv.syn0.npy
 text8.zip
+=======
+text8
+>>>>>>> Stashed changes
