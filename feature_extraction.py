@@ -21,7 +21,8 @@ def build_corpus(dic):
     for i in dic.items():
         mids.append(i[0])
         corpus.append(' '.join(i[1]['body']))
-        recipients.append(i[1]['recipients'])
+        if 'recipients' in i[1]:
+            recipients.append(i[1]['recipients'])
     return corpus, mids, recipients
 
     
