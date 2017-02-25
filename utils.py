@@ -60,7 +60,7 @@ def clean_text_simple(text, remove_stopwords=True, pos_filtering=True, stemming=
 
     return tokens
 
-def read_data_info(filename, nrwos=20):
+def read_data_info(filename="input/training_info.csv", nrows=20):
     info = pd.read_csv(filename, sep=',', header=0, nrows=nrows)
     info_dict = {}
 
@@ -85,4 +85,4 @@ def read_data_info(filename, nrwos=20):
     return info_dict
 
 if __name__ == "__main__":
-    print(read_data_info("input/training_info.csv"))
+    print(read_data_info())
