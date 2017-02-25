@@ -18,7 +18,7 @@ def vector_average(recipient_dict):
         for vec in list_of_tuples:
             vec_sum = vec_sum + vec[1]
         avg_vec = vec_sum/n
-        d[k] = avg_vec
+        d[k] = [avg_vec]
     return d
 
 def dict_to_dataframe(d):
@@ -43,9 +43,9 @@ def cos_similarity(vec_csr1, vec_csr2):
 def predict_for_each_message(recipient_vector_df, message_vector):
     k=10
     func = lambda row: cos_similarity(row.vector, message_vector)
-    recipient_vector_df["cosinus_similarity"] =\
+    recipient_vector_df["cosine_similarity"] =\
                        recipient_vector_df.apply(func, axis=1)
-    first_10 = list(recipient_vector_df.sort_values(by="cosinus_similarity")[:k]\
+    first_10 = list(recipient_vector_df.sort_values(by="cosine_similarity")[:k]\
                                               .recipient.values)
     return ' '.join(first_10)
 
@@ -64,17 +64,17 @@ def predict_for_test_info(test_corpus, test_info, recipient_vector_df, count_vec
     
 
 if __name__ == "__main__":
-    #data_info = read_data_info()
-    #corpus, mids, recipients = build_corpus(data_info)
-    #bag_of_words, count_vect = get_bag_words(corpus, mids, recipients)
-    #recipient_dict = group_by_recipient(bag_of_words)
-    #d = vector_average(recipient_dict)
-    #print("Converting dict to DataFrame")
-    #recipient_vector_df = dict_to_dataframe(d)
+    data_info = read_data_info()
+    corpus, mids, recipients = build_corpus(data_info)
+    bag_of_words, count_vect = get_bag_words(corpus, mids, recipients)
+    recipient_dict = group_by_recipient(bag_of_words)
+    d = vector_average(recipient_dict)
+    print("Converting dict to DataFrame")
+    recipient_vector_df = dict_to_dataframe(d)
     
-    #test_info_df = pd.read_csv('input/test_info.csv', sep=',', header=0)
-    #test_info = read_data_info(filename="input/test_info.csv")
-    #test_corpus, _, _ = build_corpus(test_info)
+    test_info_df = pd.read_csv('input/test_info.csv', sep=',', header=0)
+    test_info = read_data_info(filename="input/test_info.csv")
+    test_corpus, _, _ = build_corpus(test_info)
     print("Begin prediction...")
     predict_for_test_info(test_corpus, test_info_df, recipient_vector_df, count_vect, path="pred.txt")
     
