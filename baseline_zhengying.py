@@ -63,7 +63,8 @@ def get_dataframes():
 
 from sklearn.feature_extraction.text import CountVectorizer
 
-def predict_by_nearest_message(training_info, test_info, path="pred.txt"):
+def predict_by_nearest_message(training_info, test_info, write_file=False,
+                               path="pred_nearest_message.txt"):
     count_vect = CountVectorizer(stop_words='english')
     corpus = training_info.body
     X_train = count_vect.fit_transform(corpus)
@@ -76,11 +77,61 @@ def predict_by_nearest_message(training_info, test_info, path="pred.txt"):
                                         ["recipients"]
     test_info["recipients"] = test_info.apply(func, axis=1)
     pred = test_info[["mid","recipients"]]
-    pred.to_csv(path, index=False)
-    return pred, similarity, count_vect
+    if write_file:
+        pred.to_csv(path, index=False)
+    return pred, similarity, count_vect, X_train, X_test
+
+def received_mails_of_each_recipient_by_index(training_info_train):
+    print("Constructing received_mids_for_each_recipient...")
+    recipient_mids_dict = dict()
+    for index, row in training_info_train.iterrows():
+        list_of_recipients = row["list_of_recipients"]
+        for recipient in list_of_recipients:
+            if recipient in recipient_mids_dict:
+                recipient_mids_dict[recipient][0].append(index)
+            else:
+                recipient_mids_dict[recipient] = [[index]]
+    mails_of_each_recipient = pd.DataFrame(recipient_mids_dict).T
+    mails_of_each_recipient.columns = ['list_of_messages_by_index']
+    mails_of_each_recipient['number_of_received_messages'] =\
+                           mails_of_each_recipient.apply(lambda row: 
+                               len(row['list_of_messages_by_index']),axis=1)
+    return mails_of_each_recipient
     
 
+def predict_by_nearest_recipient(training_info, test_info, 
+                                 path="pred_nearest_recipient.txt"):
+    pass
+
 if __name__ == "__main__":
+    
+    read_this_please =\
+    """
+    Involved pd.DataFrame : training, training_info, test, test_info, 
+                            mails_of_each_recipient
+    columns in training: ['sender', 'mids', 'list_of_mids', 'address_book']
+    columns in training_info: ['mid', 'date', 'body', 'recipients', 
+                               'list_of_recipients', 'sender']
+    columns in test: ['sender', 'mids', 'list_of_mids', 'address_book']
+    columns in test_info: ['mid', 'date', 'body', 'sender']
+    index of mails_of_each_recipient: recipient
+    columns in mails_of_each_recipient: ['list_of_messages_by_index',
+                                         'number_of_received_messages']
+
+    Essential columns: 
+        training['address_book']
+        training_info[date', 'body', 'sender',
+                      'list_of_recipients']
+        test_info[date', 'body', 'sender']
+    column to predict: 
+        test_info['list_of_recipients']
+    """
+
+
+#    Run following two lines only once:
 #    training, training_info, test, test_info = get_dataframes()
-    pred, similarity, count_vect = predict_by_nearest_message(training_info, test_info)
-    print(pred)
+    mails_of_each_recipient = received_mails_of_each_recipient_by_index(training_info)
+
+
+#    pred, similarity, count_vect, X_train, X_test =\
+#        predict_by_nearest_message(training_info, test_info)
