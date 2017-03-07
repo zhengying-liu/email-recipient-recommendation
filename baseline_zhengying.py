@@ -132,18 +132,19 @@ def predict_by_nearest_recipients(training_info, test_info, mails_of_each_recipi
     print("Begin prediction...")
     def predict(row):
         msg_vec = count_vect.transform([row.body])
-        if linalg.norm(msg_vec) != 0:
-            msg_vec = msg_vec.astype('float64') / linalg.norm(msg_vec)
+        msg_vec = msg_vec.astype('float64')
+        print(type(msg_vec))
+        print(msg_vec.shape)
         similarity = mails_of_each_recipient.apply(lambda row: 
             row.char_vect.T.dot(msg_vec), axis=1)
         first_10 = similarity.values.argsort()[:10]
         li = [mails_of_each_recipient.iloc[idx].name for idx in first_10]
         return " ".join(li)
     test_info["recipients"] = test_info.apply(predict, axis=1)
-    pred = test_info[["mid","recipients"]]
-    if write_file:
-        pred.to_csv(path, index=False)
-    return pred, count_vect, X_train, X_test
+#     pred = test_info[["mid","recipients"]]
+#     if write_file:
+#         pred.to_csv(path, index=False)
+#     return pred, count_vect, X_train, X_test
 
 if __name__ == "__main__":
     
