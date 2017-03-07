@@ -126,15 +126,14 @@ def predict_by_nearest_recipients(training_info, test_info, mails_of_each_recipi
     def sum_up(row):
         vec = sum([X_train[i] for i in row.list_of_messages_by_index])
         if linalg.norm(vec) != 0:
-            vec = vec.astype('float64')/linalg.norm(vec)
+            vec = vec.astype('float64') / linalg.norm(vec)
         return vec
     mails_of_each_recipient['char_vect'] = mails_of_each_recipient.apply(sum_up, axis=1)
     print("Begin prediction...")
     def predict(row):
-        msg_vec = count_vect.transform(row.body)
+        msg_vec = count_vect.transform([row.body])
         if linalg.norm(msg_vec) != 0:
-            msg_vec /= linalg.norm(msg_vec)
-        print("haha")
+            msg_vec = msg_vec.astype('float64') / linalg.norm(msg_vec)
         similarity = mails_of_each_recipient.apply(lambda row: 
             row.char_vect.T.dot(msg_vec), axis=1)
         first_10 = similarity.values.argsort()[:10]
