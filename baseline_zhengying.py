@@ -7,6 +7,7 @@ Created on Sat Feb 25 21:15:56 2017
 """
 import numpy as np
 import pandas as pd
+import scipy as sp
 
 def get_dataframes():
     path_to_data = "input/"
@@ -99,9 +100,35 @@ def received_mails_of_each_recipient_by_index(training_info_train):
     return mails_of_each_recipient
     
 
-def predict_by_nearest_recipient(training_info, test_info, 
-                                 path="pred_nearest_recipient.txt"):
-    pass
+def predict_by_nearest_recipients(training_info, test_info, mails_of_each_recipient,
+                                 write_file=True, path="pred_nearest_recipient.txt"):
+    count_vect = CountVectorizer(stop_words='english')
+    corpus = training_info.body
+    X_train = count_vect.fit_transform(corpus)
+    X_test = count_vect.transform(test_info.body)
+    
+    def sum_up(row):
+        vec = sum([X_train[i] for i in row.list_of_messages_by_index])
+        vec = vec.astype('float64')/sp.sparse.linalg.norm(vec)
+        return vec
+    mails_of_each_recipient['char_vect'] = mails_of_each_recipient.apply(sum_up, axis=1)
+    print("Begin prediction...")
+    def predict(row):
+        msg_vec = count_vect.transform(row.body)
+        msg_vec /= sp.sparse.linalg.norm(msg_vec)
+        print("haha")
+        similarity = mails_of_each_recipient.apply(lambda row: 
+            row.char_vect.T.dot(msg_vec), axis=1)
+        first_10 = similarity.values.argsort()[:10]
+        li = [mails_of_each_recipient.iloc[idx].name for idx in first_10]
+        return " ".join(li)
+    test_info["recipients"] = test_info.apply(predict, axis=1)
+    pred = test_info[["mid","recipients"]]
+    if write_file:
+        pred.to_csv(path, index=False)
+    return pred, count_vect, X_train, X_test
+    
+    
 
 if __name__ == "__main__":
     
@@ -130,8 +157,11 @@ if __name__ == "__main__":
 
 #    Run following two lines only once:
 #    training, training_info, test, test_info = get_dataframes()
-    mails_of_each_recipient = received_mails_of_each_recipient_by_index(training_info)
+#    mails_of_each_recipient = received_mails_of_each_recipient_by_index(training_info)
 
 
 #    pred, similarity, count_vect, X_train, X_test =\
 #        predict_by_nearest_message(training_info, test_info)
+    pred, count_vect, X_train, X_test = predict_by_nearest_recipients(training_info, test_info, mails_of_each_recipient)
+    
+    
