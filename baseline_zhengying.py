@@ -121,7 +121,7 @@ def get_bag_words(training_info, test_info):
     corpus = training_info.body
     X_train = count_vect.fit_transform(corpus)
     X_test = count_vect.transform(test_info.body)
-    return X_train, X_test
+    return X_train, X_test, count_vect
 
     
 def build_char_vector(X_train, mails_of_each_recipient,
@@ -137,11 +137,10 @@ def build_char_vector(X_train, mails_of_each_recipient,
     return mails_of_each_recipient
     
     
-def predict_by_nearest_recipients(mails_of_each_recipient, test_info,
+def predict_by_nearest_recipients(mails_of_each_recipient, test_info, count_vect,
                                       write_file=True, path="pred_nearest_recipient.txt"):   
     print("Begin prediction...")
     def predict(row):
-        count_vect = CountVectorizer(stop_words='english')
         msg_vec = count_vect.transform([row.body])
         msg_vec = msg_vec.astype('float64')
         print(type(msg_vec))
@@ -156,7 +155,7 @@ def predict_by_nearest_recipients(mails_of_each_recipient, test_info,
     pred = test_info[["mid","recipients"]]
     if write_file:
         pred.to_csv(path, index=False)
-    return pred, count_vect, X_train, X_test
+    return pred, X_train, X_test
 
 if __name__ == "__main__":
     
@@ -177,12 +176,12 @@ if __name__ == "__main__":
 
 #    Run following two lines only once:
     training, training_info, test, test_info = get_dataframes()
-    X_train, X_test = get_bag_words(training_info, test_info)
+    X_train, X_test, count_vect = get_bag_words(training_info, test_info)
     mails_of_each_recipient = received_mails_of_each_recipient_by_index(training_info)
     build_char_vector(X_train, mails_of_each_recipient)
     
 
 #     pred, similarity, count_vect, X_train, X_test =\
 #         predict_by_nearest_message(training_info, test_info)
-    pred, count_vect, X_train, X_test = predict_by_nearest_recipients(training_info, test_info, mails_of_each_recipient)    
+    pred, X_train, X_test = predict_by_nearest_recipients(mails_of_each_recipient, test_info, count_vect)    
     
