@@ -10,6 +10,16 @@ import pandas as pd
 import scipy as sp
 
 def get_dataframes():
+    """
+    Construct four pd.DataFrame: training, training_info, test, test_info
+    
+    columns in training: ['sender', 'mids', 'list_of_mids', 'address_book']
+    columns in training_info: ['mid', 'date', 'body', 'recipients', 
+                               'list_of_recipients', 'sender']
+    columns in test: ['sender', 'mids', 'list_of_mids', 'address_book']
+    columns in test_info: ['mid', 'date', 'body', 'sender']
+    
+    """
     path_to_data = "input/"
     training = pd.read_csv(path_to_data + 'training_set.csv', sep=',')
     training_info = pd.read_csv(path_to_data + 'training_info.csv', sep=',')
@@ -83,6 +93,12 @@ def predict_by_nearest_message(training_info, test_info, write_file=False,
     return pred, similarity, count_vect, X_train, X_test
 
 def received_mails_of_each_recipient_by_index(training_info_train):
+    """
+    Return a pd.DataFrame: mails_of_each_recipient
+    index of mails_of_each_recipient: recipient
+    columns in mails_of_each_recipient: ['list_of_messages_by_index',
+                                         'number_of_received_messages']
+    """
     print("Constructing received_mids_for_each_recipient...")
     recipient_mids_dict = dict()
     for index, row in training_info_train.iterrows():
@@ -136,14 +152,6 @@ if __name__ == "__main__":
     """
     Involved pd.DataFrame : training, training_info, test, test_info, 
                             mails_of_each_recipient
-    columns in training: ['sender', 'mids', 'list_of_mids', 'address_book']
-    columns in training_info: ['mid', 'date', 'body', 'recipients', 
-                               'list_of_recipients', 'sender']
-    columns in test: ['sender', 'mids', 'list_of_mids', 'address_book']
-    columns in test_info: ['mid', 'date', 'body', 'sender']
-    index of mails_of_each_recipient: recipient
-    columns in mails_of_each_recipient: ['list_of_messages_by_index',
-                                         'number_of_received_messages']
 
     Essential columns: 
         training['address_book']
