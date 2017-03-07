@@ -51,7 +51,7 @@ def get_dataframes():
             idx = np.where(training_info["mid"] == mid)[0][0]
             recipients = training_info.loc[idx]["list_of_recipients"]
             # add sender to training_info
-            training_info.loc[idx, "sender"] = row.sender
+            training_info.loc[idx, "sender"] = row.name
             for rec in recipients:
                 if rec not in res:
                     res[rec] = 0
@@ -184,5 +184,5 @@ if __name__ == "__main__":
 
 #     pred, similarity, count_vect, X_train, X_test =\
 #         predict_by_nearest_message(training_info, test_info)
-    pred, count_vect, X_train, X_test = predict_by_nearest_recipients(training_info, test_info, mails_of_each_recipient)    
+#    pred, count_vect, X_train, X_test = predict_by_nearest_recipients(training_info, test_info, mails_of_each_recipient)    
     
