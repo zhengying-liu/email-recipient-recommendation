@@ -153,10 +153,10 @@ def predict_by_nearest_recipients(mails_of_each_recipient, test_info,
         return " ".join(li)
         
     test_info["recipients"] = test_info.apply(predict, axis=1)
-#     pred = test_info[["mid","recipients"]]
-#     if write_file:
-#         pred.to_csv(path, index=False)
-#     return pred, count_vect, X_train, X_test
+    pred = test_info[["mid","recipients"]]
+    if write_file:
+        pred.to_csv(path, index=False)
+    return pred, count_vect, X_train, X_test
 
 if __name__ == "__main__":
     
@@ -184,5 +184,5 @@ if __name__ == "__main__":
 
 #     pred, similarity, count_vect, X_train, X_test =\
 #         predict_by_nearest_message(training_info, test_info)
-    #pred, count_vect, X_train, X_test = predict_by_nearest_recipients(training_info, test_info, mails_of_each_recipient)    
+    pred, count_vect, X_train, X_test = predict_by_nearest_recipients(training_info, test_info, mails_of_each_recipient)    
     
