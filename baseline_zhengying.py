@@ -8,68 +8,8 @@ Created on Sat Feb 25 21:15:56 2017
 import numpy as np
 import pandas as pd
 from scipy.sparse import linalg
-
-def get_dataframes():
-    """
-    Construct four pd.DataFrame: training, training_info, test, test_info
-    
-    columns in training: ['sender', 'mids', 'list_of_mids', 'address_book']
-    columns in training_info: ['mid', 'date', 'body', 'recipients', 
-                               'list_of_recipients', 'sender']
-    columns in test: ['sender', 'mids', 'list_of_mids', 'address_book']
-    columns in test_info: ['mid', 'date', 'body', 'sender']
-    
-    """
-    path_to_data = "input/"
-    training = pd.read_csv(path_to_data + 'training_set.csv', sep=',')
-    training_info = pd.read_csv(path_to_data + 'training_info.csv', sep=',')
-    test = pd.read_csv(path_to_data + 'test_set.csv', sep=',')
-    test_info = pd.read_csv(path_to_data + 'test_info.csv', sep=',')
-    
-    # list of mids in training, test
-    print("Constructing list_of_mids...")
-    func = lambda row: list(map(int, row.mids.split(' ')))
-    training["list_of_mids"] = training.apply(func, axis=1)
-    test["list_of_mids"] = test.apply(func, axis=1)
-    
-    # list of recipients in training_info
-    print("Constructing list_of_recipients...")
-    func = lambda row: [rec for rec in row.recipients.split(' ') if '@' in rec]
-    training_info["list_of_recipients"] = training_info.apply(func, axis=1)
-    
-    # create an empty column for sender in training_info, test_info
-    func = lambda row: ""
-    training_info["sender"] = training_info.apply(func,axis=1)
-    test_info["sender"] = test_info.apply(func,axis=1)
-
-    # address book in training, test
-    print("Constructing address book...")
-    def count_contacted_recipients(row):
-        list_of_mids = row["list_of_mids"]
-        res = dict()
-        for mid in list_of_mids:
-            idx = np.where(training_info["mid"] == mid)[0][0]
-            recipients = training_info.loc[idx]["list_of_recipients"]
-            # add sender to training_info
-            training_info.loc[idx, "sender"] = row.name
-            for rec in recipients:
-                if rec not in res:
-                    res[rec] = 0
-                else:
-                    res[rec] += 1
-        return res
-    training["address_book"]= training.apply(count_contacted_recipients,axis=1)
-    test["address_book"] = training["address_book"].copy()
-    
-    # add sender to test_info
-    print("Add sender to test_info...")
-    for index, row in test.iterrows():
-        list_of_mids = row["list_of_mids"]
-        for mid in list_of_mids:
-            idx = np.where(test_info["mid"] == mid)[0][0]
-            test_info.loc[idx, "sender"] = row.sender
-    
-    return training, training_info, test, test_info
+from utils import get_dataframes, received_mails_of_each_recipient_by_index
+from evaluation import split_train_test, get_validation_score
 
 
 from sklearn.feature_extraction.text import CountVectorizer
@@ -91,30 +31,7 @@ def predict_by_nearest_message(training_info, test_info, write_file=False,
     if write_file:
         pred.to_csv(path, index=False)
     return pred, similarity, count_vect, X_train, X_test
-
-def received_mails_of_each_recipient_by_index(training_info_train):
-    """
-    Return a pd.DataFrame: mails_of_each_recipient
-    index of mails_of_each_recipient: recipient
-    columns in mails_of_each_recipient: ['list_of_messages_by_index',
-                                         'number_of_received_messages']
-    """
-    print("Constructing received_mids_for_each_recipient...")
-    recipient_mids_dict = dict()
-    for index, row in training_info_train.iterrows():
-        list_of_recipients = row["list_of_recipients"]
-        for recipient in list_of_recipients:
-            if recipient in recipient_mids_dict:
-                recipient_mids_dict[recipient][0].append(index)
-            else:
-                recipient_mids_dict[recipient] = [[index]]
-    mails_of_each_recipient = pd.DataFrame(recipient_mids_dict).T
-    mails_of_each_recipient.columns = ['list_of_messages_by_index']
-    mails_of_each_recipient['number_of_received_messages'] =\
-                           mails_of_each_recipient.apply(lambda row: 
-                               len(row['list_of_messages_by_index']),axis=1)
-                        
-    return mails_of_each_recipient
+ 
     
 def get_bag_words(training_info, test_info):
     count_vect = CountVectorizer(stop_words='english')
@@ -126,7 +43,7 @@ def get_bag_words(training_info, test_info):
     
 def build_char_vector(X_train, mails_of_each_recipient,
                                  write_file=True, path="pred_nearest_recipient.txt"):    
-    def sum_up(row):
+    def sum_up(row): 
         vec = sum([X_train[i] for i in row.list_of_messages_by_index])
         if linalg.norm(vec) != 0:
             vec = vec.astype('float64') / linalg.norm(vec)
@@ -137,26 +54,30 @@ def build_char_vector(X_train, mails_of_each_recipient,
     return mails_of_each_recipient
     
     
-def predict_by_nearest_recipients(mails_of_each_recipient, test_info, count_vect,
+def predict_by_nearest_recipients(mails_of_each_recipient, test_info, count_vect, training,
                                       write_file=True, path="pred_nearest_recipient.txt"):   
     print("Begin prediction...")
     def predict(row):
         msg_vec = count_vect.transform([row.body])
         msg_vec = msg_vec.astype('float64')
-        print(type(msg_vec))
-        print(msg_vec.shape)
-        similarity = mails_of_each_recipient.apply(lambda row: 
-            row.char_vect.T.dot(msg_vec), axis=1)
-        first_10 = similarity.values.argsort()[:10]
-        li = [mails_of_each_recipient.iloc[idx].name for idx in first_10]
-        return " ".join(li)
-        
+        address_book = training.loc[row.sender].address_book
+        similarity = []
+        for k in address_book:
+            sim = mails_of_each_recipient.loc[k].char_vect.dot(msg_vec.T)
+            sim = sim[0,0]
+            similarity.append((sim,k))
+        li_sorted = sorted(similarity, reverse=True)[:10]
+        first_10 = [t[1] for t in li_sorted]
+        li = [mails_of_each_recipient.loc[idx].name for idx in first_10]
+        res = " ".join(li)
+        print(row.name, res)
+        return res
     test_info["recipients"] = test_info.apply(predict, axis=1)
     pred = test_info[["mid","recipients"]]
     if write_file:
         pred.to_csv(path, index=False)
-    return pred, X_train, X_test
-
+    return pred
+    
 if __name__ == "__main__":
     
     read_this_please =\
@@ -176,13 +97,12 @@ if __name__ == "__main__":
 
 #    Run following two lines only once:
     training, training_info, test, test_info = get_dataframes()
-    X_train, X_test, count_vect = get_bag_words(training_info, test_info)
-    mails_of_each_recipient = received_mails_of_each_recipient_by_index(training_info)
+    training_info_t, training_info_v = split_train_test(training_info)
+    X_train, X_test, count_vect = get_bag_words(training_info_t, training_info_v)
+    mails_of_each_recipient = received_mails_of_each_recipient_by_index(training_info_t)
     build_char_vector(X_train, mails_of_each_recipient)
     
-
-#     pred, similarity, count_vect, X_train, X_test =\
-#         predict_by_nearest_message(training_info, test_info)
-    pred, X_train, X_test = predict_by_nearest_recipients(mails_of_each_recipient, test_info, count_vect)    
+#   predict_by_nearest_message(training_info, test_info)
+    pred = predict_by_nearest_recipients(mails_of_each_recipient, training_info_v, count_vect, training)  
 
     
