@@ -183,6 +183,6 @@ if __name__ == "__main__":
 
 #     pred, similarity, count_vect, X_train, X_test =\
 #         predict_by_nearest_message(training_info, test_info)
-#    pred, count_vect, X_train, X_test = predict_by_nearest_recipients(training_info, test_info, mails_of_each_recipient)    
+    pred, X_train, X_test = predict_by_nearest_recipients(mails_of_each_recipient, test_info, count_vect)    
 
     
