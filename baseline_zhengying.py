@@ -63,14 +63,14 @@ def predict_by_nearest_recipients(mails_of_each_recipient, test_info, count_vect
         address_book = training.loc[row.sender].address_book
         similarity = []
         for k in address_book:
-            sim = mails_of_each_recipient.loc[k].char_vect.dot(msg_vec.T)
-            sim = sim[0,0]
-            similarity.append((sim,k))
+            if k in mails_of_each_recipient.index:
+                sim = mails_of_each_recipient.loc[k].char_vect.dot(msg_vec.T)
+                sim = sim[0,0]
+                similarity.append((sim,k))
         li_sorted = sorted(similarity, reverse=True)[:10]
         first_10 = [t[1] for t in li_sorted]
         li = [mails_of_each_recipient.loc[idx].name for idx in first_10]
         res = " ".join(li)
-        print(row.name, res)
         return res
     test_info["recipients"] = test_info.apply(predict, axis=1)
     pred = test_info[["mid","recipients"]]
@@ -104,5 +104,5 @@ if __name__ == "__main__":
     
 #   predict_by_nearest_message(training_info, test_info)
     pred = predict_by_nearest_recipients(mails_of_each_recipient, training_info_v, count_vect, training)  
-
+    score = get_validation_score(training_info_v, pred)
     
