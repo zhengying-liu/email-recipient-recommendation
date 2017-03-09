@@ -160,7 +160,7 @@ def received_mails_of_each_recipient_by_index(training_info_train):
     columns in mails_of_each_recipient: ['list_of_messages_by_index',
                                          'number_of_received_messages']
     """
-    print("Constructing received_mids_for_each_recipient...")
+    print("Constructing received_mails_of_each_recipient_by_index...")
     recipient_mids_dict = dict()
     for index, row in training_info_train.iterrows():
         list_of_recipients = row["list_of_recipients"]
@@ -176,6 +176,24 @@ def received_mails_of_each_recipient_by_index(training_info_train):
                                len(row['list_of_messages_by_index']),axis=1)
                         
     return mails_of_each_recipient
+
+def clean_raw_text(raw_text):
+    """
+    Given a string raw_text (e.g. the body of a mail), clean it and return a 
+    string.
+    """
+    # First remove inline JavaScript/CSS:
+    cleaned = re.sub(r"(?is)<(script|style).*?>.*?()", "", raw_text)
+    # Then remove html comments. 
+    cleaned = re.sub(r"(?s)[\n]?", "", cleaned)
+    # Next remove the remaining tags:
+    cleaned = re.sub(r"(?s)<.*?>", " ", cleaned)
+    # Finally deal with whitespace
+    cleaned = re.sub(r" ", " ", cleaned)
+    cleaned = re.sub(r"^$", "", cleaned)
+    cleaned = re.sub("''|,", "", cleaned)
+    cleaned = re.sub(r"  ", " ", cleaned)
+    return cleaned
 
 if __name__ == "__main__":
    pass
