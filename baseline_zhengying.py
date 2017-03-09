@@ -8,7 +8,7 @@ Created on Sat Feb 25 21:15:56 2017
 import numpy as np
 import pandas as pd
 from scipy.sparse import linalg
-from utils import get_dataframes, received_mails_of_each_recipient_by_index
+from utils import get_dataframes, received_mails_of_each_recipient_by_index, clean_raw_text
 from evaluation import split_train_test, get_validation_score
 
 
@@ -16,7 +16,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 def predict_by_nearest_message(training_info, test_info, write_file=False,
                                path="pred_nearest_message.txt"):
-    count_vect = CountVectorizer(stop_words='english')
+    count_vect = CountVectorizer(stop_words='english', preprocessor=clean_raw_text)
     corpus = training_info.body
     X_train = count_vect.fit_transform(corpus)
     X_test = count_vect.transform(test_info.body)
@@ -34,7 +34,8 @@ def predict_by_nearest_message(training_info, test_info, write_file=False,
  
     
 def get_bag_words(training_info, test_info):
-    count_vect = CountVectorizer(stop_words='english')
+    print("Constructing bag of words...")
+    count_vect = CountVectorizer(stop_words='english',preprocessor=clean_raw_text)
     corpus = training_info.body
     X_train = count_vect.fit_transform(corpus)
     X_test = count_vect.transform(test_info.body)
@@ -43,6 +44,7 @@ def get_bag_words(training_info, test_info):
     
 def build_char_vector(X_train, mails_of_each_recipient,
                                  write_file=True, path="pred_nearest_recipient.txt"):    
+    print("Building char_vector...")
     def sum_up(row): 
         vec = sum([X_train[i] for i in row.list_of_messages_by_index])
         if linalg.norm(vec) != 0:
@@ -95,14 +97,12 @@ if __name__ == "__main__":
     """
 
 
-#    Run following two lines only once:
-    training, training_info, test, test_info = get_dataframes()
-    training_info_t, training_info_v = split_train_test(training_info)
+#    Run following lines only once:
+#    training, training_info, test, test_info = get_dataframes()
+#    training_info_t, training_info_v = split_train_test(training_info)
+#    mails_of_each_recipient = received_mails_of_each_recipient_by_index(training_info_t)
     X_train, X_test, count_vect = get_bag_words(training_info_t, training_info_v)
-    mails_of_each_recipient = received_mails_of_each_recipient_by_index(training_info_t)
     build_char_vector(X_train, mails_of_each_recipient)
     
-#   predict_by_nearest_message(training_info, test_info)
     pred = predict_by_nearest_recipients(mails_of_each_recipient, training_info_v, count_vect, training)  
     score = get_validation_score(training_info_v, pred)
-    
