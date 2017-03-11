@@ -98,7 +98,7 @@ def predict_by_multilabel_for_each_sender(training_info_t, training_info_v):
 
         # pred_df: pd.DataFrame with columns ['mid', 'list_of_recipients']
         pred_df = model.predict(df_test)
-        print("Test error for this sender: ", get_validation_score(df_test, pred_df))
+        print("Test score for this sender: ", get_validation_score(df_test, pred_df))
         preds.append(pred_df)
         models.append(model)
     pred = pd.concat(preds).sort_values('mid')
