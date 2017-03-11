@@ -6,11 +6,16 @@ Created on Fri Mar 10 23:02:50 2017
 @author: Evariste
 """
 
+import numpy
 import pandas as pd
 from feature_extraction import Word2VecFeatureExtractor
 from utils import get_dataframes
 from evaluation import split_train_test, get_validation_score
 from sklearn.preprocessing import MultiLabelBinarizer
+from sklearn.svm import LinearSVC
+from sklearn.multiclass import OneVsRestClassifier
+from sklearn.tree import DecisionTreeClassifier
+from tqdm import tqdm
 
 class MultilabelClassifier():
 
@@ -50,12 +55,14 @@ class MultilabelClassifier():
         return X_test
 
     def classifier_fit(self, X_train, Y_train):
-        # TODO
-        self.classifier = "the classifier of the model"
+        self.classifier = OneVsRestClassifier(DecisionTreeClassifier())
+        self.classifier.fit(X_train, Y_train)
 
     def classifier_predict(self, X_test):
-        # TODO
-        Y_test = "0-1 encoding matrix of the predicted recipients"
+        if len(self.mlb.classes_) > 1:
+            Y_test = self.classifier.predict_proba(X_test)
+        else:
+            Y_test = numpy.ones((X_test.shape[0], 1))
         return Y_test
 
     def fit(self, df_train):
@@ -77,7 +84,7 @@ def predict_by_multilabel_for_each_sender(training_info_t, training_info_v):
     grouped_test = training_info_v.groupby("sender")
     preds = []
     models = []
-    for name, group in grouped_train:
+    for name, group in tqdm(grouped_train):
         df_train = group.reset_index()
         df_test = grouped_test.get_group(name).reset_index()
 
@@ -98,6 +105,6 @@ if __name__ == "__main__":
     training, training_info, test, test_info = get_dataframes()
     training_info_t, training_info_v = split_train_test(training_info)
 
-    #pred, models = predict_by_multilabel_for_each_sender(training_info_t, training_info_v)
-    #score = get_validation_score(training_info_v, pred)
+    pred, models = predict_by_multilabel_for_each_sender(training_info_t, training_info_v)
+    score = get_validation_score(training_info_v, pred)
     print("Score: ", score)
