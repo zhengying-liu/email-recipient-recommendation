@@ -195,5 +195,23 @@ def clean_raw_text(raw_text):
     cleaned = re.sub(r"  ", " ", cleaned)
     return cleaned
 
+def find_common_recipients(training):
+    list_of_address_book = []
+    for index, row in training.iterrows():
+        list_of_address_book.append(row.address_book)
+    recipients_in_several_address_book = {}
+    n = len(list_of_address_book)
+    for i in range(n):
+        for key in list_of_address_book[i]:
+            if key not in recipients_in_several_address_book:
+                for j in range(i+1,n):
+                    if key in list_of_address_book[j]:
+                        if key not in recipients_in_several_address_book:
+                            recipients_in_several_address_book[key] = {i,j}
+                        else:
+                            recipients_in_several_address_book[key].add(j)
+    return list_of_address_book, recipients_in_several_address_book
+
 if __name__ == "__main__":
-   pass
+   list_of_address_book, recipients_in_several_address_book =\
+       find_common_recipients(training)

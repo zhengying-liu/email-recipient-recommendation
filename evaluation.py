@@ -72,7 +72,7 @@ def mapk(actual, predicted, k=10):
     """
     return np.mean([apk(a,p,k) for a,p in zip(actual, predicted)])
     
-def split_train_test(training_info, pr_train=0.6):
+def split_train_test(training_info, pr_train=0.9):
     n_train = int(len(training_info) * pr_train)
     indices = list(training_info.mid)
     train_indices = np.random.choice(indices, size=n_train, replace=False)
@@ -83,6 +83,7 @@ def split_train_test(training_info, pr_train=0.6):
     
 
 def get_validation_score(training_info_v, prediction_df):
+    print("Calculating the score...")
     training_info_v = training_info_v.sort_values(by='mid', axis=0)
     prediction_df = prediction_df.sort_values(by='mid', axis=0)
     prediction_df['list_of_recipients'] = prediction_df.apply(lambda row: [rec for rec in row.recipients.split(' ')], axis=1)

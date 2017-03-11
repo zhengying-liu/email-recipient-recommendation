@@ -40,7 +40,6 @@ def get_bag_words(training_info, test_info):
     X_train = count_vect.fit_transform(corpus)
     X_test = count_vect.transform(test_info.body)
     return X_train, X_test, count_vect
-
     
 def build_char_vector(X_train, mails_of_each_recipient,
                                  write_file=True, path="pred_nearest_recipient.txt"):    
@@ -73,6 +72,7 @@ def predict_by_nearest_recipients(mails_of_each_recipient, test_info, count_vect
         first_10 = [t[1] for t in li_sorted]
         li = [mails_of_each_recipient.loc[idx].name for idx in first_10]
         res = " ".join(li)
+        print(row.name)
         return res
     test_info["recipients"] = test_info.apply(predict, axis=1)
     pred = test_info[["mid","recipients"]]
@@ -98,9 +98,9 @@ if __name__ == "__main__":
 
 
 #    Run following lines only once:
-#    training, training_info, test, test_info = get_dataframes()
-#    training_info_t, training_info_v = split_train_test(training_info)
-#    mails_of_each_recipient = received_mails_of_each_recipient_by_index(training_info_t)
+    training, training_info, test, test_info = get_dataframes()
+    training_info_t, training_info_v = split_train_test(training_info)
+    mails_of_each_recipient = received_mails_of_each_recipient_by_index(training_info_t)
     X_train, X_test, count_vect = get_bag_words(training_info_t, training_info_v)
     build_char_vector(X_train, mails_of_each_recipient)
     
