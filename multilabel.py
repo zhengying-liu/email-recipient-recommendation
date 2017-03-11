@@ -11,6 +11,7 @@ from feature_extraction import Word2VecFeatureExtractor
 from utils import get_dataframes
 from evaluation import split_train_test, get_validation_score
 from sklearn.preprocessing import MultiLabelBinarizer
+import numpy as np
 
 class MultilabelClassifier():
 
@@ -29,11 +30,14 @@ class MultilabelClassifier():
         self.df_test = None
 
 
-    def Y_to_df(self, Y):
+    def Y_to_df(self, Y, threshold=0.5):
         "return a df with cols ['mid', 'list_of_recipients'] "
         df = self.df_test[['mid', 'list_of_recipients']]
-        #Y_sorted = 
-        df['list_of_recipients'] = self.mlb.inverse_transform(Y)
+        Y_bin = np.zeros(Y.shape)
+        Y_bin[Y>=threshold] = 1
+        recipients_not_ordered = self.mlb.inverse_transform(Y_bin)
+        inds = Y[Y>=threshold].argsort(axis=1)
+        df['list_of_recipients'] = recipients_not_ordered[inds]
         return df
 
     def df_to_Y(self, df):
