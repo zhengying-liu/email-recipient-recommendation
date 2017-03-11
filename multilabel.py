@@ -33,19 +33,18 @@ class MultilabelClassifier():
         self.df_train = None
         self.df_test = None
 
-
+    # return a df with cols ['mid', 'list_of_recipients']
     def Y_to_df(self, Y, threshold=0.5):
-        "return a df with cols ['mid', 'list_of_recipients'] "
         df = self.df_test[['mid', 'list_of_recipients']].copy()
-        Y_bin = np.zeros(Y.shape)
-        Y_bin[Y>=threshold] = 1
-        recipients_not_ordered = self.mlb.inverse_transform(Y_bin)
-        inds = Y[Y>=threshold].argsort(axis=1)
-        df['list_of_recipients'] = recipients_not_ordered[inds]
+        inds = (Y * (Y>=threshold)).argsort(axis=1)
+        list_of_recipients = []
+        for index in inds:
+            list_of_recipients.append(self.mlb.classes_[index])
+        df['list_of_recipients'] = list_of_recipients
         return df
 
+    # return a 0-1 encoding matrix of the recipients in df
     def df_to_Y(self, df):
-        " return a 0-1 encoding matrix of the recipients in df"
         Y = self.mlb.fit_transform(df['list_of_recipients'])
         return Y
 
