@@ -32,6 +32,7 @@ class MultilabelClassifier():
     def Y_to_df(self, Y):
         "return a df with cols ['mid', 'list_of_recipients'] "
         df = self.df_test[['mid', 'list_of_recipients']]
+        #Y_sorted = 
         df['list_of_recipients'] = self.mlb.inverse_transform(Y)
         return df
 
