@@ -18,37 +18,38 @@ class MultilabelClassifier():
         
         # df_train: pd.DataFrame with columns ['mid', 'date', 'body', 'list_of_recipients']
         # df_test: pd.DdataFrame with columns at least of ['mid', 'date', 'body']
+        # both of them have continous integer index
         self.df_train = None
         self.df_test = None
                  
     def Y_to_df(self, Y):
         # TODO
-        df = "something here"
+        df = "a dataframe with columns ['mid', 'recipients']"
         return df
     
     def df_to_Y(self, df):
         # TODO
-        Y = "something here"
+        Y = "0-1 encoding matrix of the recipients in df"
         return Y
     
     def feature_extractor_fit_transform(self, df_train):
         # TODO
-        self.feature_extractor = "something here"
-        X_train = "something here"
+        self.feature_extractor = "the feature extractor of this model"
+        X_train = "training feature matrix"
         return X_train
     
     def feature_extractor_transform(self, df_test):
         # TODO
-        X_test = "something here"
+        X_test = "test feature matrix"
         return X_test
     
     def classifier_fit(self, X_train, Y_train):
         # TODO
-        self.classifier = "something here"
+        self.classifier = "the classifier of the model"
         
     def classifier_predict(self, X_test):
         # TODO
-        Y_test = "something here"
+        Y_test = "0-1 encoding matrix of the predicted recipients"
         return Y_test
         
     def fit(self, df_train):
