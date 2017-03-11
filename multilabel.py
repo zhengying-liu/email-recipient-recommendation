@@ -37,7 +37,7 @@ class MultilabelClassifier():
 
     # return a df with cols ['mid', 'list_of_recipients']
     def Y_to_df(self, Y, threshold=0.5):
-        df = self.df_test[['mid', 'list_of_recipients']].copy()
+        df = self.df_test[['mid']].copy()
         inds = (Y * (Y>=threshold)).argsort(axis=1)
 
         list_of_recipients = []
@@ -89,7 +89,7 @@ class MultilabelClassifier():
         return pred_df
 
 
-def predict_by_multilabel_for_each_sender(training_info_t, training_info_v):
+def predict_by_multilabel_for_each_sender(training_info_t, training_info_v, validation=False):
     grouped_train = training_info_t.groupby("sender")
     grouped_test = training_info_v.groupby("sender")
     preds = []
@@ -103,9 +103,11 @@ def predict_by_multilabel_for_each_sender(training_info_t, training_info_v):
 
         # pred_df: pd.DataFrame with columns ['mid', 'list_of_recipients']
         pred_df = model.predict(df_test)
-        print("Test score for this sender: ", get_validation_score(df_test, pred_df))
         preds.append(pred_df)
         models.append(model)
+
+        if validation:
+            print("Test score for this sender: ", get_validation_score(df_test, pred_df))
     pred = pd.concat(preds).sort_values('mid')
     pred = pred.reset_index()[['mid', 'list_of_recipients']]
     return pred, models
@@ -115,6 +117,9 @@ if __name__ == "__main__":
     training, training_info, test, test_info = get_dataframes()
     training_info_t, training_info_v = split_train_test(training_info)
 
-    pred, models = predict_by_multilabel_for_each_sender(training_info_t, training_info_v)
+    pred, models = predict_by_multilabel_for_each_sender(training_info_t, training_info_v, validation=True)
     score = get_validation_score(training_info_v, pred)
     print("Score: ", score)
+
+    pred_test, models_test = predict_by_multilabel_for_each_sender(training_info, test_info)
+    pred_test.to_csv("pred_decision_tree.txt", index=False)
