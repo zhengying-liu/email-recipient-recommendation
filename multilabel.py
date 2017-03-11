@@ -6,8 +6,8 @@ Created on Fri Mar 10 23:02:50 2017
 @author: Evariste
 """
 
-import numpy
 import pandas as pd
+import numpy as np
 from feature_extraction import Word2VecFeatureExtractor
 from utils import get_dataframes
 from evaluation import split_train_test, get_validation_score
@@ -34,10 +34,14 @@ class MultilabelClassifier():
         self.df_test = None
 
 
-    def Y_to_df(self, Y):
+    def Y_to_df(self, Y, threshold=0.5):
         "return a df with cols ['mid', 'list_of_recipients'] "
-        df = self.df_test[['mid', 'list_of_recipients']]
-        df['list_of_recipients'] = self.mlb.inverse_transform(Y)
+        df = self.df_test[['mid', 'list_of_recipients']].copy()
+        Y_bin = np.zeros(Y.shape)
+        Y_bin[Y>=threshold] = 1
+        recipients_not_ordered = self.mlb.inverse_transform(Y_bin)
+        inds = Y[Y>=threshold].argsort(axis=1)
+        df['list_of_recipients'] = recipients_not_ordered[inds]
         return df
 
     def df_to_Y(self, df):
@@ -62,7 +66,7 @@ class MultilabelClassifier():
         if len(self.mlb.classes_) > 1:
             Y_test = self.classifier.predict_proba(X_test)
         else:
-            Y_test = numpy.ones((X_test.shape[0], 1))
+            Y_test = np.ones((X_test.shape[0], 1))
         return Y_test
 
     def fit(self, df_train):
