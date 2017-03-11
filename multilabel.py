@@ -17,7 +17,7 @@ class MultilabelClassifier():
         self.feature_extractor = None
         
         # df_train: pd.DataFrame with columns ['mid', 'date', 'body', 'list_of_recipients']
-        # df_test: pd.DdataFrame with columns at least of ['mid', 'date', 'body']
+        # df_test: pd.DdataFrame with columns at least ['mid', 'date', 'body']
         # both of them have continous integer index
         self.df_train = None
         self.df_test = None
@@ -64,7 +64,6 @@ class MultilabelClassifier():
         Y_test = self.classifier_predict(X_test)
         pred_df = self.Y_to_df(Y_test)
         return pred_df
-    
     
     
 def predict_by_multilabel_for_each_sender(training_info_t, training_info_v):
