@@ -18,6 +18,8 @@ def clean_text_simple(text, remove_stopwords=True, pos_filtering=True, stemming=
     else:
         punct = string.punctuation
         
+    text = clean_raw_text(text)
+        
     # convert to lower case
     text = text.lower()
     # remove punctuation (preserving intra-word dashes)
@@ -187,20 +189,22 @@ def clean_raw_text(raw_text):
     Given a string raw_text (e.g. the body of a mail), clean it and return a 
     string.
     """
+    
     # First remove inline JavaScript/CSS:
-    cleaned = re.sub(r"(?is)<(script|style).*?>.*?()", "", raw_text)
+    text = re.sub(r"(?is)<(script|style).*?>.*?()", " ", raw_text)
+    # Remove url
+    text = re.sub(r"^https?:\/\/.*[\r\n]*", " ", text, flags=re.MULTILINE)
     # Then remove html comments. 
-    cleaned = re.sub(r"(?s)[\n]?", "", cleaned)
+    text = re.sub(r"(?s)[\n]?", "", text)
     # Next remove the remaining tags:
-    cleaned = re.sub(r"(?s)<.*?>", " ", cleaned)
-    # Remove numbers
-    cleaned = re.sub(r"[0-9]", "", cleaned)
-    # Finally deal with whitespace
-    cleaned = re.sub(r" ", " ", cleaned)
-    cleaned = re.sub(r"^$", "", cleaned)
-    cleaned = re.sub("''|,", "", cleaned)
-    cleaned = re.sub(r"  ", " ", cleaned)
-    return cleaned
+    text = re.sub(r"(?s)<.*?>", " ", text)
+    # Remove forward/senders/time information, keep subject
+    text = re.sub(r"-{2,}.*Subject:", " ", text)
+    # Add a space before some uppercase letter, e.g. "ThanksLisa" => "Thanks Lisa"
+    text = re.sub(r"(?=[A-Z])(?<=[^A-Z])(?<! )(?<!-)", " ", text)
+    # Remove consecutive non letter string: "713/853-4218", "$80,400.00"
+    text = re.sub(r"[^a-zA-Z]{5,}", " ", text)
+    return text
 
 def find_common_recipients(training):
     list_of_address_book = []
