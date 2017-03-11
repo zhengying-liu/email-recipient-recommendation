@@ -56,7 +56,7 @@ def mapk(actual, predicted, k=10):
     Parameters
     ----------
     actual : list
-             A list of lists of elements that are to be predicted 
+             A list of lists of elements that are to be predicted
              (order doesn't matter in the lists)
     predicted : list
                 A list of lists of predicted elements
@@ -71,7 +71,7 @@ def mapk(actual, predicted, k=10):
 
     """
     return np.mean([apk(a,p,k) for a,p in zip(actual, predicted)])
-    
+
 def split_train_test(training_info, pr_train=0.9):
     print("Splitting into train and test set...")
     n_train = int(len(training_info) * pr_train)
@@ -81,13 +81,11 @@ def split_train_test(training_info, pr_train=0.9):
     training_info_t = training_info[training_info['mid'].isin(train_indices)].reset_index()
     training_info_v = training_info[training_info['mid'].isin(test_indices)].reset_index()
     return training_info_t, training_info_v
-    
+
 
 def get_validation_score(training_info_v, prediction_df):
     print("Calculating the score...")
     training_info_v = training_info_v.sort_values(by='mid', axis=0)
     prediction_df = prediction_df.sort_values(by='mid', axis=0)
-    prediction_df['list_of_recipients'] = prediction_df.apply(lambda row: [rec for rec in row.recipients.split(' ')], axis=1)
-    return mapk(training_info_v.list_of_recipients.values, prediction_df['list_of_recipients'].values)
-        
-    
+    #prediction_df['list_of_recipients'] = prediction_df.apply(lambda row: [rec for rec in row.list_of_recipients.split(' ')], axis=1)
+    return mapk(training_info_v.list_of_recipients.values, prediction_df.list_of_recipients.values)
