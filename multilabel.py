@@ -9,27 +9,29 @@ Created on Fri Mar 10 23:02:50 2017
 import pandas as pd
 from utils import get_dataframes
 from evaluation import split_train_test, get_validation_score
+from sklearn.preprocessing import MultiLabelBinarizer
 
 class MultilabelClassifier():
     
     def __init__(self):
         self.classifier = None
         self.feature_extractor = None
-        
+        self.mlb = MultiLabelBinarizer()
         # df_train: pd.DataFrame with columns ['mid', 'date', 'body', 'list_of_recipients']
         # df_test: pd.DdataFrame with columns at least ['mid', 'date', 'body']
         # both of them have continous integer index
         self.df_train = None
         self.df_test = None
-                 
+        
     def Y_to_df(self, Y):
-        # TODO
-        df = "a dataframe with columns ['mid', 'recipients']"
+        "return a df with cols ['mid', 'list_of_recipients'] "
+        df = self.df_test[['mid', 'list_of_recipients']]
+        df['list_of_recipients'] = self.mlb.inverse_transform(Y)
         return df
-    
+
     def df_to_Y(self, df):
-        # TODO
-        Y = "0-1 encoding matrix of the recipients in df"
+        " return a 0-1 encoding matrix of the recipients in df"
+        Y = self.mlb.fit_transform(df['list_of_recipients'])
         return Y
     
     def feature_extractor_fit_transform(self, df_train):
@@ -90,6 +92,6 @@ if __name__ == "__main__":
     training, training_info, test, test_info = get_dataframes()
     training_info_t, training_info_v = split_train_test(training_info)
     
-    pred, models = predict_by_multilabel_for_each_sender(training_info_t, training_info_v)
-    score = get_validation_score(training_info_v, pred)
+    #pred, models = predict_by_multilabel_for_each_sender(training_info_t, training_info_v)
+    #score = get_validation_score(training_info_v, pred)
     print("Score: ", score)

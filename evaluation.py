@@ -73,6 +73,7 @@ def mapk(actual, predicted, k=10):
     return np.mean([apk(a,p,k) for a,p in zip(actual, predicted)])
     
 def split_train_test(training_info, pr_train=0.9):
+    print("Splitting into train and test set...")
     n_train = int(len(training_info) * pr_train)
     indices = list(training_info.mid)
     train_indices = np.random.choice(indices, size=n_train, replace=False)
