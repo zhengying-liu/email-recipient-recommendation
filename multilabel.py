@@ -39,9 +39,14 @@ class MultilabelClassifier():
     def Y_to_df(self, Y, threshold=0.5):
         df = self.df_test[['mid', 'list_of_recipients']].copy()
         inds = (Y * (Y>=threshold)).argsort(axis=1)
+
         list_of_recipients = []
-        for index in inds:
+        for i, index in enumerate(inds):
+            index = index[-10:][::-1]
+            #print(Y[i, index])
+            #print(self.mlb.classes_[index])
             list_of_recipients.append(self.mlb.classes_[index])
+
         df['list_of_recipients'] = list_of_recipients
         return df
 
@@ -60,7 +65,7 @@ class MultilabelClassifier():
         return X_test
 
     def classifier_fit(self, X_train, Y_train):
-        self.classifier = OneVsRestClassifier(DecisionTreeClassifier())
+        self.classifier = OneVsRestClassifier(DecisionTreeClassifier(max_depth=30))
         self.classifier.fit(X_train, Y_train)
 
     def classifier_predict(self, X_test):
@@ -98,7 +103,7 @@ def predict_by_multilabel_for_each_sender(training_info_t, training_info_v):
 
         # pred_df: pd.DataFrame with columns ['mid', 'list_of_recipients']
         pred_df = model.predict(df_test)
-        print("Test error for this sender: ", get_validation_score(df_test, pred_df))
+        print("Test score for this sender: ", get_validation_score(df_test, pred_df))
         preds.append(pred_df)
         models.append(model)
     pred = pd.concat(preds).sort_values('mid')
@@ -107,9 +112,8 @@ def predict_by_multilabel_for_each_sender(training_info_t, training_info_v):
 
 
 if __name__ == "__main__":
-
-#    training, training_info, test, test_info = get_dataframes()
-#    training_info_t, training_info_v = split_train_test(training_info)
+    training, training_info, test, test_info = get_dataframes()
+    training_info_t, training_info_v = split_train_test(training_info)
 
     pred, models = predict_by_multilabel_for_each_sender(training_info_t, training_info_v)
     score = get_validation_score(training_info_v, pred)
