@@ -143,6 +143,12 @@ def get_dataframes():
     training["address_book"]= training.apply(count_contacted_recipients,axis=1)
     test["address_book"] = training["address_book"].copy()
     
+    # add number of emails sent by each sender
+    training["number_of_emails"] = training.apply(lambda row: len(row.list_of_mids), axis=1)
+    
+    # add number of recipients contacted by each sender
+    training["number_of_recipients"] = training.apply(lambda row: len(row.address_book), axis=1)
+    
     # add sender to test_info
     print("Add sender to test_info...")
     for index, row in test.iterrows():
@@ -173,8 +179,7 @@ def received_mails_of_each_recipient_by_index(training_info_train):
     mails_of_each_recipient.columns = ['list_of_messages_by_index']
     mails_of_each_recipient['number_of_received_messages'] =\
                            mails_of_each_recipient.apply(lambda row: 
-                               len(row['list_of_messages_by_index']),axis=1)
-                        
+                               len(row['list_of_messages_by_index']),axis=1)                        
     return mails_of_each_recipient
 
 def clean_raw_text(raw_text):
