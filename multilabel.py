@@ -20,9 +20,7 @@ class MultilabelClassifier():
         # df_test: pd.DdataFrame with columns at least of ['mid', 'date', 'body']
         self.df_train = None
         self.df_test = None
-        
-        self.result_dataframe = None
-         
+                 
     def Y_to_df(self, Y):
         # TODO
         df = "something here"
@@ -58,7 +56,7 @@ class MultilabelClassifier():
         self.df_test = df_test
         X_test = self.feature_extractor_transform(df_test)
         Y_test = self.classifier.predict(X_test)
-        pred_df = self.Y_test_to_pred_df(Y_test)
+        pred_df = self.Y_to_df(Y_test)
         return pred_df
     
     
