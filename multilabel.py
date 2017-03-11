@@ -31,7 +31,7 @@ class MultilabelClassifier():
         Y = "something here"
         return Y
     
-    def feature_extractor_fit(self, df_train):
+    def feature_extractor_fit_transform(self, df_train):
         # TODO
         self.feature_extractor = "something here"
         X_train = "something here"
@@ -46,16 +46,21 @@ class MultilabelClassifier():
         # TODO
         self.classifier = "something here"
         
+    def classifier_predict(self, X_test):
+        # TODO
+        Y_test = "something here"
+        return Y_test
+        
     def fit(self, df_train):
         self.df_train = df_train
-        X_train = self.feature_extractor_fit(df_train)
+        X_train = self.feature_extractor_fit_transform(df_train)
         Y_train = self.df_to_Y(df_train)
         self.classifier_fit(X_train, Y_train)
         
     def predict(self, df_test):
         self.df_test = df_test
         X_test = self.feature_extractor_transform(df_test)
-        Y_test = self.classifier.predict(X_test)
+        Y_test = self.classifier_predict(X_test)
         pred_df = self.Y_to_df(Y_test)
         return pred_df
     
