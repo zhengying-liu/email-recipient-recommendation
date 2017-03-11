@@ -6,13 +6,34 @@ Created on Sat Feb 25 11:18:22 2017
 @author: salma
 """
 
-from utils import read_data_info
+from utils import read_data_info, clean_text_simple
 from sklearn.feature_extraction.text import CountVectorizer
-from gensim.models import KeyedVectors
+from gensim.models.keyedvectors import KeyedVectors
 from tqdm import tqdm
 import numpy
 
-#%%
+class Word2VecFeatureExtractor:
+    def __init__(self):
+        self.model = KeyedVectors.load_word2vec_format('text.model.bin', binary=True)
+        self.dim = 200
+
+    def fit(self, df):
+        pass
+
+    def predict(self, df):
+        ret = numpy.zeros((df.shape[0], self.dim))
+        for index, row in df.iterrows():
+            tokens = clean_text_simple(row.body)
+            cont = 0
+
+            for word in tokens:
+                if word in self.model.vocab:
+                    ret[index, :] += self.model[word]
+                    cont += 1
+
+            if cont > 0:
+                ret[index, :] /= cont
+        return ret
 
 def build_corpus(dic):
     corpus = list()
@@ -25,7 +46,7 @@ def build_corpus(dic):
             recipients.append(i[1]['recipients'])
     return corpus, mids, recipients
 
-    
+
 def get_bag_words(corpus, mids, recipients):
     count_vect = CountVectorizer()
     X = count_vect.fit_transform(corpus)
@@ -34,7 +55,7 @@ def get_bag_words(corpus, mids, recipients):
        d[mids[i]] = {'vector': X[i], 'recipients': recipients[i]}
     return d, count_vect
 
-    
+
 def get_word2vec(info):
     model = KeyedVectors.load_word2vec_format('text.model.bin', binary=True)
     d = dict()
@@ -53,7 +74,7 @@ def get_word2vec(info):
 
     return d
 
-    
+
 def group_by_recipient(dic):
     d = dict()
     for k, v in dic.items():
@@ -61,10 +82,10 @@ def group_by_recipient(dic):
             d[rec] = []
     for k, v in dic.items():
         for rec in v['recipients']:
-            d[rec].append((k, v['vector']))        
+            d[rec].append((k, v['vector']))
     return d
 
-    
+
 if __name__ == "__main__":
     data_info = read_data_info()
     corpus, mids, recipients = build_corpus(data_info)
