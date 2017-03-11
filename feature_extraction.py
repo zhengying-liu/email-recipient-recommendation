@@ -23,7 +23,7 @@ class Word2VecFeatureExtractor:
     def predict(self, df):
         ret = numpy.zeros((df.shape[0], self.dim))
         for index, row in df.iterrows():
-            tokens = clean_text_simple(row.body)
+            tokens = clean_text_simple(row.body, stemming=False, keep_dash=False)
             cont = 0
 
             for word in tokens:
