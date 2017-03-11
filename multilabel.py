@@ -12,10 +12,15 @@ from feature_extraction import Word2VecFeatureExtractor
 from utils import get_dataframes
 from evaluation import split_train_test, get_validation_score
 from sklearn.preprocessing import MultiLabelBinarizer
+<<<<<<< Updated upstream
 from sklearn.svm import LinearSVC
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.tree import DecisionTreeClassifier
 from tqdm import tqdm
+=======
+import numpy as np
+from sklearn.ensemble import RandomForestRegressor
+>>>>>>> Stashed changes
 
 class MultilabelClassifier():
 
@@ -107,7 +112,11 @@ if __name__ == "__main__":
 
     training, training_info, test, test_info = get_dataframes()
     training_info_t, training_info_v = split_train_test(training_info)
+<<<<<<< Updated upstream
 
+=======
+    
+>>>>>>> Stashed changes
     pred, models = predict_by_multilabel_for_each_sender(training_info_t, training_info_v)
     score = get_validation_score(training_info_v, pred)
     print("Score: ", score)
