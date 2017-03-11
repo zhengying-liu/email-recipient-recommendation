@@ -94,12 +94,12 @@ def predict_by_multilabel_for_each_sender(training_info_t, training_info_v):
         model = MultilabelClassifier()
         model.fit(df_train)
 
-        # pred_df: pd.DataFrame with columns ['mid', 'recipients']
+        # pred_df: pd.DataFrame with columns ['mid', 'list_of_recipients']
         pred_df = model.predict(df_test)
         preds.append(pred_df)
         models.append(model)
     pred = pd.concat(preds).sort_values('mid')
-    pred = pred.reset_index()[['mid', 'recipients']]
+    pred = pred.reset_index()[['mid', 'list_of_recipients']]
     return pred, models
 
 
