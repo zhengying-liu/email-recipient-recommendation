@@ -14,18 +14,21 @@ from sklearn.preprocessing import MultiLabelBinarizer
 
 class MultilabelClassifier():
 
-    def __init__(self, feature_extractor):
+    def __init__(self, feature_extractor='word2vec'):
         self.classifier = None
-        self.feature_extractor = None
+        if feature_extractor == 'word2vec':
+            self.feature_extractor = Word2VecFeatureExtractor()
+        else:
+            raise Exception("Unknown feature extractor")
         self.mlb = MultiLabelBinarizer()
-        
+
         # df_train: pd.DataFrame with columns ['mid', 'date', 'body', 'list_of_recipients']
         # df_test: pd.DdataFrame with columns at least ['mid', 'date', 'body']
         # both of them have continous integer index
         self.df_train = None
         self.df_test = None
 
-        
+
     def Y_to_df(self, Y):
         "return a df with cols ['mid', 'list_of_recipients'] "
         df = self.df_test[['mid', 'list_of_recipients']]
@@ -78,8 +81,7 @@ def predict_by_multilabel_for_each_sender(training_info_t, training_info_v):
         df_train = group.reset_index()
         df_test = grouped_test.get_group(name).reset_index()
 
-        feature_extractor = Word2VecFeatureExtractor()
-        model = MultilabelClassifier(feature_extractor)
+        model = MultilabelClassifier()
         model.fit(df_train)
 
         # pred_df: pd.DataFrame with columns ['mid', 'recipients']
@@ -95,8 +97,7 @@ if __name__ == "__main__":
 
     training, training_info, test, test_info = get_dataframes()
     training_info_t, training_info_v = split_train_test(training_info)
-    
+
     #pred, models = predict_by_multilabel_for_each_sender(training_info_t, training_info_v)
     #score = get_validation_score(training_info_v, pred)
     print("Score: ", score)
-
