@@ -17,7 +17,7 @@ def clean_text_simple(text, remove_stopwords=True, pos_filtering=True, stemming=
         punct = string.punctuation.replace('-', '')
     else:
         punct = string.punctuation
-
+        
     # convert to lower case
     text = text.lower()
     # remove punctuation (preserving intra-word dashes)
@@ -193,6 +193,8 @@ def clean_raw_text(raw_text):
     cleaned = re.sub(r"(?s)[\n]?", "", cleaned)
     # Next remove the remaining tags:
     cleaned = re.sub(r"(?s)<.*?>", " ", cleaned)
+    # Remove numbers
+    cleaned = re.sub(r"[0-9]", "", cleaned)
     # Finally deal with whitespace
     cleaned = re.sub(r" ", " ", cleaned)
     cleaned = re.sub(r"^$", "", cleaned)
