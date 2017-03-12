@@ -40,23 +40,33 @@ class MultilabelClassifier():
         self.df_test = None
 
     # return a df with cols ['mid', 'list_of_recipients']
-    def Y_to_df(self, Y, threshold=0.5, debug=False):
+    def Y_to_df(self, Y, address_book, threshold=0.5, debug=False):
         df = self.df_test[['mid']].copy()
-        inds = (Y * (Y>=threshold)).argsort(axis=1)
+        inds = Y.argsort(axis=1)
 
         list_of_recipients = []
         for i, index in enumerate(inds):
-            index = index[-10:][::-1]
             if debug:
-                print("-" * 20)
-                print(self.df_test['body'][i])
+                print("*" * 50)
+                #print(self.df_test['body'][i])
                 print(self.df_test['list_of_recipients'][i])
-                print(Y[i, index])
-                print(self.mlb.classes_[index])
-                print("-" * 20)
-            #print(Y[i, index])
-            #print(self.mlb.classes_[index])
-            list_of_recipients.append(self.mlb.classes_[index])
+
+            aux = []
+            for ind in index:
+                #if Y[i, ind] >= threshold:
+                receiver = self.mlb.classes_[ind]
+                aux.append((Y[i, ind], address_book[receiver], ind))
+            aux = sorted(aux, reverse=True)[:10]
+
+            filtered_index = []
+            for x in aux:
+                filtered_index.append(x[2])
+            list_of_recipients.append(self.mlb.classes_[filtered_index])
+
+            if debug:
+                print(aux)
+                print(self.mlb.classes_[filtered_index])
+                print("*" * 50)
 
         df['list_of_recipients'] = list_of_recipients
         return df
@@ -76,7 +86,7 @@ class MultilabelClassifier():
         return X_test
 
     def classifier_fit(self, X_train, Y_train):
-        self.classifier = OneVsRestClassifier(DecisionTreeClassifier(max_depth=30))
+        self.classifier = OneVsRestClassifier(DecisionTreeClassifier(max_depth=30, random_state=0))
         #self.classifier = OneVsRestClassifier(GradientBoostingClassifier(n_estimators=100, max_depth=9))
         self.classifier.fit(X_train, Y_train)
 
@@ -93,11 +103,11 @@ class MultilabelClassifier():
         Y_train = self.df_to_Y(df_train)
         self.classifier_fit(X_train, Y_train)
 
-    def predict(self, df_test, debug=False):
+    def predict(self, df_test, address_book, debug=False):
         self.df_test = df_test
         X_test = self.feature_extractor_transform(df_test)
         Y_test = self.classifier_predict(X_test)
-        pred_df = self.Y_to_df(Y_test, debug=debug)
+        pred_df = self.Y_to_df(Y_test, address_book, debug=debug)
         return pred_df
 
 
@@ -117,7 +127,7 @@ def predict_by_multilabel_for_each_sender(training_info_t, training_info_v, vali
         model.fit(df_train)
 
         # pred_df: pd.DataFrame with columns ['mid', 'list_of_recipients']
-        pred_df = model.predict(df_test)
+        pred_df = model.predict(df_test, training.iloc[name].address_book)
         preds.append(pred_df)
         models.append(model)
 
@@ -125,7 +135,7 @@ def predict_by_multilabel_for_each_sender(training_info_t, training_info_v, vali
             score = get_validation_score(df_test, pred_df)
             print("Test score for this sender: ", score)
             rows = df_test.shape[0]
-            average_score = (total * average_score + score) / (total + rows)
+            average_score = (total * average_score + rows * score) / (total + rows)
             total += rows
             print("Average score for all senders: ", average_score)
 
@@ -149,6 +159,6 @@ if __name__ == "__main__":
     score = get_validation_score(training_info_v, pred)
     print("Score: ", score)
 
-    pred_test, models_test = predict_by_multilabel_for_each_sender(training_info, test_info)
-    pred_test = pred_test[['mid', 'recipients']]
-    pred_test.to_csv("pred_decision_tree.txt", index=False)
+    #pred_test, models_test = predict_by_multilabel_for_each_sender(training_info, test_info)
+    #pred_test = pred_test[['mid', 'recipients']]
+    #pred_test.to_csv("pred_decision_tree.txt", index=False)
