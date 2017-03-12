@@ -51,7 +51,6 @@ class MultilabelClassifier():
                 print("-" * 20)
                 print(self.df_test['body'][i])
                 print(self.df_test['list_of_recipients'][i])
-                index = index[-10:][::-1]
                 print(Y[i, index])
                 print(self.mlb.classes_[index])
                 print("-" * 20)
