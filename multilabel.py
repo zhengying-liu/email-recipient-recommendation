@@ -16,16 +16,21 @@ from sklearn.svm import LinearSVC
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.tree import DecisionTreeClassifier
 from tqdm import tqdm
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingClassifier
 
 class MultilabelClassifier():
 
-    def __init__(self, feature_extractor='word2vec'):
+    def __init__(self, feature_extractor_name='word2vec', feature_extractor=None):
         self.classifier = None
-        if feature_extractor == 'word2vec':
-            self.feature_extractor = Word2VecFeatureExtractor()
+
+        if feature_extractor is not None:
+            self.feature_extractor = feature_extractor
         else:
-            raise Exception("Unknown feature extractor")
+            if feature_extractor == 'word2vec':
+                self.feature_extractor = Word2VecFeatureExtractor()
+            else:
+                raise Exception("Unknown feature extractor")
+
         self.mlb = MultiLabelBinarizer()
 
         # df_train: pd.DataFrame with columns ['mid', 'date', 'body', 'list_of_recipients']
@@ -35,13 +40,21 @@ class MultilabelClassifier():
         self.df_test = None
 
     # return a df with cols ['mid', 'list_of_recipients']
-    def Y_to_df(self, Y, threshold=0.5):
+    def Y_to_df(self, Y, threshold=0.5, debug=False):
         df = self.df_test[['mid']].copy()
         inds = (Y * (Y>=threshold)).argsort(axis=1)
 
         list_of_recipients = []
         for i, index in enumerate(inds):
             index = index[-10:][::-1]
+            if debug:
+                print("-" * 20)
+                print(self.df_test['body'][i])
+                print(self.df_test['list_of_recipients'][i])
+                index = index[-10:][::-1]
+                print(Y[i, index])
+                print(self.mlb.classes_[index])
+                print("-" * 20)
             #print(Y[i, index])
             #print(self.mlb.classes_[index])
             list_of_recipients.append(self.mlb.classes_[index])
@@ -65,6 +78,7 @@ class MultilabelClassifier():
 
     def classifier_fit(self, X_train, Y_train):
         self.classifier = OneVsRestClassifier(DecisionTreeClassifier(max_depth=30))
+        #self.classifier = OneVsRestClassifier(GradientBoostingClassifier(n_estimators=100, max_depth=9))
         self.classifier.fit(X_train, Y_train)
 
     def classifier_predict(self, X_test):
@@ -80,11 +94,11 @@ class MultilabelClassifier():
         Y_train = self.df_to_Y(df_train)
         self.classifier_fit(X_train, Y_train)
 
-    def predict(self, df_test):
+    def predict(self, df_test, debug=False):
         self.df_test = df_test
         X_test = self.feature_extractor_transform(df_test)
         Y_test = self.classifier_predict(X_test)
-        pred_df = self.Y_to_df(Y_test)
+        pred_df = self.Y_to_df(Y_test, debug=debug)
         return pred_df
 
 
@@ -93,11 +107,14 @@ def predict_by_multilabel_for_each_sender(training_info_t, training_info_v, vali
     grouped_test = training_info_v.groupby("sender")
     preds = []
     models = []
+    feature_extractor = Word2VecFeatureExtractor()
+    total = 0
+    average_score = 0
     for name, group in tqdm(grouped_train):
         df_train = group.reset_index()
         df_test = grouped_test.get_group(name).reset_index()
 
-        model = MultilabelClassifier()
+        model = MultilabelClassifier(feature_extractor=feature_extractor)
         model.fit(df_train)
 
         # pred_df: pd.DataFrame with columns ['mid', 'list_of_recipients']
@@ -106,7 +123,13 @@ def predict_by_multilabel_for_each_sender(training_info_t, training_info_v, vali
         models.append(model)
 
         if validation:
-            print("Test score for this sender: ", get_validation_score(df_test, pred_df))
+            score = get_validation_score(df_test, pred_df)
+            print("Test score for this sender: ", score)
+            rows = df_test.shape[0]
+            average_score = (total * average_score + score) / (total + rows)
+            total += rows
+            print("Average score for all senders: ", average_score)
+
     pred = pd.concat(preds).sort_values('mid')
     pred = pred.reset_index()[['mid', 'list_of_recipients']]
 
