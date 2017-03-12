@@ -8,18 +8,21 @@ Created on Sun Mar 12 10:09:50 2017
 
 import pandas as pd
 import numpy as np
+from feature_extraction import Word2VecFeatureExtractor
 from utils import get_dataframes, clean_raw_text
 from evaluation import split_train_test, get_validation_score
 from sklearn.preprocessing import MultiLabelBinarizer
+from sklearn.svm import LinearSVC
+from sklearn.multiclass import OneVsRestClassifier
+from sklearn.tree import DecisionTreeClassifier
 from tqdm import tqdm
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.svm import LinearSVC
 from sklearn.linear_model import LogisticRegression
 
 class MultilabelClassifier():
 
     def __init__(self):
-        self.classifier = LogisticRegression(multi_class='multinomial',solver='lbfgs')
+        self.classifier = OneVsRestClassifier(LinearSVC())
         self.feature_extractor = TfidfVectorizer(stop_words='english', preprocessor=clean_raw_text)
         self.mlb = MultiLabelBinarizer()
 
@@ -53,12 +56,12 @@ class MultilabelClassifier():
 
     def feature_extractor_fit_transform(self, df_train):
         print("feature_extractor_fit_transform...")
-        X_train = self.feature_extractor.fit_transform(df_train)
+        X_train = self.feature_extractor.fit_transform(df_train.body)
         return X_train
 
     def feature_extractor_transform(self, df_test):
         print("feature_extractor_transform...")
-        X_test = self.feature_extractor.transform(df_test)
+        X_test = self.feature_extractor.transform(df_test.body)
         return X_test
 
     def classifier_fit(self, X_train, Y_train):
@@ -68,7 +71,7 @@ class MultilabelClassifier():
     def classifier_predict(self, X_test):
         print("classifier_predict...")
         if len(self.mlb.classes_) > 1:
-            Y_test = self.classifier.predict_proba(X_test)
+            Y_test = self.classifier.predict(X_test)
         else:
             Y_test = np.ones((X_test.shape[0], 1))
         return Y_test
@@ -97,8 +100,11 @@ def predict_by_multilabel_for_each_sender(training_info_t, training_info_v, vali
     preds = []
     models = []
     for name, group in tqdm(grouped_train):
+        
         df_train = group.reset_index()
+        print("shape of df_train: ", df_train.shape)
         df_test = grouped_test.get_group(name).reset_index()
+        print("shape of df_test: ", df_test.shape)
 
         model = MultilabelClassifier()
         model.fit(df_train)
@@ -110,14 +116,17 @@ def predict_by_multilabel_for_each_sender(training_info_t, training_info_v, vali
 
         if validation:
             print("Test score for this sender: ", get_validation_score(df_test, pred_df))
+            
+        print("""#########################################################""")
+        print("\n\n\n")
     pred = pd.concat(preds).sort_values('mid')
     pred = pred.reset_index()[['mid', 'list_of_recipients']]
     return pred, models
 
 
 if __name__ == "__main__":
-#    training, training_info, test, test_info = get_dataframes()
-#    training_info_t, training_info_v = split_train_test(training_info)
+    training, training_info, test, test_info = get_dataframes()
+    training_info_t, training_info_v = split_train_test(training_info)
 
     pred, models = predict_by_multilabel_for_each_sender(training_info_t, training_info_v, validation=True)
     score = get_validation_score(training_info_v, pred)

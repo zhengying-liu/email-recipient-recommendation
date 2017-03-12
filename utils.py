@@ -184,7 +184,7 @@ def received_mails_of_each_recipient_by_index(training_info_train):
                                len(row['list_of_messages_by_index']),axis=1)                        
     return mails_of_each_recipient
 
-def clean_raw_text(raw_text):
+def clean_raw_text(raw_text, stemming=True):
     """
     Given a string raw_text (e.g. the body of a mail), clean it and return a 
     string.
@@ -217,6 +217,9 @@ def clean_raw_text(raw_text):
     text = re.sub(r" +", " ", text)
     # strip leading and trailing white space
     text = text.strip()
+    # convert to lower case
+    text = text.lower()
+        
     return text
 
 def find_common_recipients(training):
