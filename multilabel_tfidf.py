@@ -10,7 +10,7 @@ import pandas as pd
 import numpy as np
 np.set_printoptions(threshold=np.nan)
 from feature_extraction import Word2VecFeatureExtractor
-from utils import get_dataframes, clean_raw_text
+from utils import get_dataframes, clean_raw_text, softmax
 from evaluation import split_train_test, get_validation_score
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.svm import LinearSVR
@@ -24,9 +24,10 @@ from sklearn.linear_model import LogisticRegression
 class MultilabelClassifier():
 
     def __init__(self):
-        self.classifier = OneVsRestClassifier(LinearSVC(C=5))
+        self.classifier = OneVsRestClassifier(LinearSVC(C=100))
         self.feature_extractor = TfidfVectorizer(stop_words='english', preprocessor=clean_raw_text)
         self.mlb = MultiLabelBinarizer()
+        self.recipient_frequencies = None
 
         # df_train: pd.DataFrame with columns ['mid', 'date', 'body', 'list_of_recipients']
         # df_test: pd.DdataFrame with columns at least ['mid', 'date', 'body']
@@ -77,7 +78,8 @@ class MultilabelClassifier():
             Y_test = self.classifier.decision_function(X_test)
         else:
             Y_test = np.ones((X_test.shape[0], 1))
-        return Y_test
+        Y_test = softmax(Y_test)
+        return 0*Y_test + self.recipient_frequencies
 
     def fit(self, df_train):
         self.df_train = df_train
@@ -85,6 +87,9 @@ class MultilabelClassifier():
         print("shape of X_train: ", X_train.shape)
         Y_train = self.df_to_Y(df_train)
         print("shape of Y_train: ", Y_train.shape)
+        self.recipient_frequencies = np.sum(Y_train, axis=0) / np.sum(Y_train)
+        print(self.recipient_frequencies)
+        print("shape of recipient_frequencies: ", self.recipient_frequencies.shape)
         self.classifier_fit(X_train, Y_train)
 
     def predict(self, df_test):
@@ -135,7 +140,7 @@ if __name__ == "__main__":
 #    training_info_t, training_info_v = split_train_test(training_info, pr_train=0.7)
 
     pred, models, validation_scores = predict_by_multilabel_for_each_sender(training_info_t, training_info_v, validation=True)
-    result_SVC_C5 = pred, models, validation_scores
+    result_address_book = pred, models, validation_scores
     score = get_validation_score(training_info_v, pred)
     print("Score: ", score)
 
