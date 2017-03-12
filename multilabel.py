@@ -44,6 +44,10 @@ class MultilabelClassifier():
         df = self.df_test[['mid']].copy()
         inds = Y.argsort(axis=1)
 
+        sum_freq = 0
+        for k,v in address_book.items():
+            sum_freq += v
+
         list_of_recipients = []
         for i, index in enumerate(inds):
             if debug:
@@ -55,12 +59,12 @@ class MultilabelClassifier():
             for ind in index:
                 #if Y[i, ind] >= threshold:
                 receiver = self.mlb.classes_[ind]
-                aux.append((Y[i, ind], address_book[receiver], ind))
+                aux.append((Y[i, ind] + address_book[receiver] / float(sum_freq), ind))
             aux = sorted(aux, reverse=True)[:10]
 
             filtered_index = []
             for x in aux:
-                filtered_index.append(x[2])
+                filtered_index.append(x[1])
             list_of_recipients.append(self.mlb.classes_[filtered_index])
 
             if debug:
