@@ -199,11 +199,18 @@ def clean_raw_text(raw_text):
     # Next remove the remaining tags:
     text = re.sub(r"(?s)<.*?>", " ", text)
     # Remove forward/senders/time information, keep subject
-    text = re.sub(r"-{2,}.*Subject:", " ", text)
+    text = re.sub(r"-{2,}.*?Subject:", " ", text)
+    text = re.sub(r"From:.*?Subject:", " ", text)
+    text = re.sub(r"To:.*?Subject:", " ", text)
+    text = re.sub(r"TO:.*?Subject:", " ", text)
     # Add a space before some uppercase letter, e.g. "ThanksLisa" => "Thanks Lisa"
     text = re.sub(r"(?=[A-Z])(?<=[^A-Z])(?<! )(?<!-)", " ", text)
     # Remove consecutive non letter string: "713/853-4218", "$80,400.00"
     text = re.sub(r"[^a-zA-Z]{5,}", " ", text)
+    # Replace "\t" by " "
+    text = re.sub(r"\t", " ", text)
+    # Dealing with multiple white space
+    text = re.sub(r" +", " ", text)
     return text
 
 def find_common_recipients(training):
