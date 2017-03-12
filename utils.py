@@ -239,6 +239,10 @@ def find_common_recipients(training):
                             recipients_in_several_address_book[key].add(j)
     return list_of_address_book, recipients_in_several_address_book
 
+def softmax(Y, axis=-1):
+    e = np.exp(Y - np.max(Y, axis=axis, keepdims=True))
+    return e / np.sum(e, axis=axis)
+
 if __name__ == "__main__":
    list_of_address_book, recipients_in_several_address_book =\
        find_common_recipients(training)

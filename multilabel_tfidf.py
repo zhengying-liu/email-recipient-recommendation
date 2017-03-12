@@ -8,10 +8,12 @@ Created on Sun Mar 12 10:09:50 2017
 
 import pandas as pd
 import numpy as np
+np.set_printoptions(threshold=np.nan)
 from feature_extraction import Word2VecFeatureExtractor
 from utils import get_dataframes, clean_raw_text
 from evaluation import split_train_test, get_validation_score
 from sklearn.preprocessing import MultiLabelBinarizer
+from sklearn.svm import LinearSVR
 from sklearn.svm import LinearSVC
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.tree import DecisionTreeClassifier
@@ -22,7 +24,7 @@ from sklearn.linear_model import LogisticRegression
 class MultilabelClassifier():
 
     def __init__(self):
-        self.classifier = OneVsRestClassifier(LinearSVC())
+        self.classifier = OneVsRestClassifier(LinearSVC(C=5))
         self.feature_extractor = TfidfVectorizer(stop_words='english', preprocessor=clean_raw_text)
         self.mlb = MultiLabelBinarizer()
 
@@ -36,11 +38,12 @@ class MultilabelClassifier():
     def Y_to_df(self, Y, threshold=0.5):
         print("Y_to_df...")
         df = self.df_test[['mid']].copy()
+#        print(Y)
         inds = (Y * (Y>=threshold)).argsort(axis=1)
 
         list_of_recipients = []
         for i, index in enumerate(inds):
-            index = index[-10:][::-1]
+            index = index[::-1][:10]
             #print(Y[i, index])
             #print(self.mlb.classes_[index])
             list_of_recipients.append(self.mlb.classes_[index])
@@ -71,7 +74,7 @@ class MultilabelClassifier():
     def classifier_predict(self, X_test):
         print("classifier_predict...")
         if len(self.mlb.classes_) > 1:
-            Y_test = self.classifier.predict(X_test)
+            Y_test = self.classifier.decision_function(X_test)
         else:
             Y_test = np.ones((X_test.shape[0], 1))
         return Y_test
@@ -99,6 +102,8 @@ def predict_by_multilabel_for_each_sender(training_info_t, training_info_v, vali
     grouped_test = training_info_v.groupby("sender")
     preds = []
     models = []
+    validation_scores = np.zeros(125)
+    
     for name, group in tqdm(grouped_train):
         
         df_train = group.reset_index()
@@ -115,22 +120,26 @@ def predict_by_multilabel_for_each_sender(training_info_t, training_info_v, vali
         models.append(model)
 
         if validation:
-            print("Test score for this sender: ", get_validation_score(df_test, pred_df))
+            validation_scores[name] = get_validation_score(df_test, pred_df)
+            print("Test score for this sender: ", validation_scores[name])
             
         print("""#########################################################""")
         print("\n\n\n")
     pred = pd.concat(preds).sort_values('mid')
     pred = pred.reset_index()[['mid', 'list_of_recipients']]
-    return pred, models
+    return pred, models, validation_scores
 
 
 if __name__ == "__main__":
-    training, training_info, test, test_info = get_dataframes()
-    training_info_t, training_info_v = split_train_test(training_info)
+#    training, training_info, test, test_info = get_dataframes()
+#    training_info_t, training_info_v = split_train_test(training_info, pr_train=0.7)
 
-    pred, models = predict_by_multilabel_for_each_sender(training_info_t, training_info_v, validation=True)
+    pred, models, validation_scores = predict_by_multilabel_for_each_sender(training_info_t, training_info_v, validation=True)
+    result_SVC_C5 = pred, models, validation_scores
     score = get_validation_score(training_info_v, pred)
     print("Score: ", score)
 
 #    pred_test, models_test = predict_by_multilabel_for_each_sender(training_info, test_info)
-#    pred_test.to_csv("pred_decision_tree.txt", index=False)
+#    pred_test['recipients'] = pred_test.apply(lambda row: " ".join(row["list_of_recipients"]), axis=1)
+#    pred_test = pred_test[['mid', 'recipients']]
+#    pred_test.to_csv("pred_tf-idf_LinearSVC.csv", index=False)
