@@ -16,7 +16,6 @@ from sklearn.svm import LinearSVC
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.tree import DecisionTreeClassifier
 from tqdm import tqdm
-import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 
 class MultilabelClassifier():
