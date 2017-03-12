@@ -110,6 +110,13 @@ def predict_by_multilabel_for_each_sender(training_info_t, training_info_v, vali
             print("Test score for this sender: ", get_validation_score(df_test, pred_df))
     pred = pd.concat(preds).sort_values('mid')
     pred = pred.reset_index()[['mid', 'list_of_recipients']]
+
+    def write_recipients(row):
+        li = row['list_of_recipients']
+        ret = " ".join(li)
+        return ret
+    pred['recipients'] = pred.apply(write_recipients, axis=1)
+
     return pred, models
 
 
@@ -122,4 +129,5 @@ if __name__ == "__main__":
     print("Score: ", score)
 
     pred_test, models_test = predict_by_multilabel_for_each_sender(training_info, test_info)
+    pred_test = pred_test[['mid', 'recipients']]
     pred_test.to_csv("pred_decision_tree.txt", index=False)
