@@ -209,8 +209,14 @@ def clean_raw_text(raw_text):
     text = re.sub(r"[^a-zA-Z]{5,}", " ", text)
     # Replace "\t" by " "
     text = re.sub(r"\t", " ", text)
+    # replace "/"
+    text = re.sub(r"/", " ", text)
+    # replace " -" by " "
+    text = re.sub(r" -+", " ", text)
     # Dealing with multiple white space
     text = re.sub(r" +", " ", text)
+    # strip leading and trailing white space
+    text = text.strip()
     return text
 
 def find_common_recipients(training):
