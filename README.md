@@ -25,7 +25,7 @@ We named our team "450euros", which is incidentally the amount of prize that wil
 
 - `word2vec_logistic_regression.py`: implements a multilabel Logistic Regression with word2vec, using only the recipients in the address book
 
-- `tfidf_linearsvc.py`: implements a multilabel SVC with tf-idf features, using only the recipients in the address book
+- `tfidf_linearsvc.py`: implements a multilabel SVC with tf-idf features, using only the recipients in the address book. This model has given our best score.
 
 - `feature_extraction.py`: implements the Word2Vec feature extractor
 
