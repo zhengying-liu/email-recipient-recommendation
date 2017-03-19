@@ -1,4 +1,5 @@
-from baseline_zhengying import predict_by_nearest_recipients, received_mails_of_each_recipient_by_index, get_bag_words
+from baseline_zhengying import (predict_by_nearest_recipients,
+        received_mails_of_each_recipient_by_index, get_bag_words, build_char_vector)
 from utils import get_dataframes
 import multilabel
 import multilabel_tfidf
