@@ -6,11 +6,13 @@ Created on Sat Feb 25 11:18:22 2017
 @author: salma
 """
 
-from utils import read_data_info, clean_text_simple
-from sklearn.feature_extraction.text import CountVectorizer
-from gensim.models.keyedvectors import KeyedVectors
-from tqdm import tqdm
 import numpy
+from gensim.models.keyedvectors import KeyedVectors
+from sklearn.feature_extraction.text import CountVectorizer
+from tqdm import tqdm
+
+from code.utils import read_data_info, clean_text_simple
+
 
 class Word2VecFeatureExtractor:
     def __init__(self):

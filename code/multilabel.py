@@ -6,17 +6,17 @@ Created on Fri Mar 10 23:02:50 2017
 @author: Evariste
 """
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 from feature_extraction import Word2VecFeatureExtractor
-from utils import get_dataframes
-from evaluation import split_train_test, get_validation_score
-from sklearn.preprocessing import MultiLabelBinarizer
-from sklearn.svm import LinearSVC
 from sklearn.multiclass import OneVsRestClassifier
+from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.tree import DecisionTreeClassifier
 from tqdm import tqdm
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingClassifier
+from utils import get_dataframes
+
+from code.evaluation import split_train_test, get_validation_score
+
 
 class MultilabelClassifier():
 

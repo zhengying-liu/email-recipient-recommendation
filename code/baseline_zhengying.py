@@ -5,13 +5,11 @@ Created on Sat Feb 25 21:15:56 2017
 
 @author: Evariste
 """
-import numpy as np
-import pandas as pd
 from scipy.sparse import linalg
-from utils import get_dataframes, received_mails_of_each_recipient_by_index, clean_raw_text
-from evaluation import split_train_test, get_validation_score
-
 from sklearn.feature_extraction.text import CountVectorizer
+from utils import get_dataframes, received_mails_of_each_recipient_by_index, clean_raw_text
+
+from code.evaluation import split_train_test, get_validation_score
 
 
 def predict_by_nearest_message(training_info, test_info, write_file=False,
@@ -75,7 +73,6 @@ def predict_by_nearest_recipients(mails_of_each_recipient, test_info, count_vect
         first_10 = [t[1] for t in li_sorted]
         li = [mails_of_each_recipient.loc[idx].name for idx in first_10]
         res = " ".join(li)
-        print(row.name)
         return res
 
     test_info["recipients"] = test_info.apply(predict, axis=1)

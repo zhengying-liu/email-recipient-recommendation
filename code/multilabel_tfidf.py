@@ -6,15 +6,16 @@ Created on Sun Mar 12 10:09:50 2017
 @author: Evariste
 """
 
-import pandas as pd
 import numpy as np
-from utils import get_dataframes, clean_raw_text, softmax
-from evaluation import split_train_test, get_validation_score
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.multiclass import OneVsRestClassifier
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.svm import LinearSVC
-from sklearn.multiclass import OneVsRestClassifier
 from tqdm import tqdm
-from sklearn.feature_extraction.text import TfidfVectorizer
+from utils import get_dataframes, clean_raw_text, softmax
+
+from code.evaluation import split_train_test, get_validation_score
 
 np.set_printoptions(threshold=np.nan)
 

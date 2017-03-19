@@ -8,7 +8,9 @@ Created on Sat Feb 25 11:28:09 2017
 
 import numpy as np
 import pandas as pd
-from feature_extraction import get_bag_words, read_data_info, group_by_recipient, build_corpus
+
+from code.feature_extraction import get_bag_words, read_data_info, group_by_recipient, build_corpus
+
 
 def vector_average(recipient_dict):
     d = dict()
