@@ -22,7 +22,7 @@ def predict_by_nearest_message(training_info, test_info, write_file=False,
     X_test = count_vect.transform(test_info.body)
     similarity = X_test.dot(X_train.T).toarray()
     indexes_of_nearest_message = similarity.argmax(axis=1)
-    # for each row of test_info, return recipients of the nearest message 
+    # for each row of test_info, return recipients of the nearest message
     # in training_info
     func = lambda row: training_info.loc[indexes_of_nearest_message[row.name]]\
                                         ["recipients"]
@@ -31,8 +31,8 @@ def predict_by_nearest_message(training_info, test_info, write_file=False,
     if write_file:
         pred.to_csv(path, index=False)
     return pred, similarity, count_vect, X_train, X_test
- 
-    
+
+
 def get_bag_words(training_info, test_info):
     print("Constructing bag of words...")
     count_vect = CountVectorizer(stop_words='english',preprocessor=clean_raw_text)
@@ -40,23 +40,23 @@ def get_bag_words(training_info, test_info):
     X_train = count_vect.fit_transform(corpus)
     X_test = count_vect.transform(test_info.body)
     return X_train, X_test, count_vect
-    
+
 def build_char_vector(X_train, mails_of_each_recipient,
-                                 write_file=True, path="pred_nearest_recipient.txt"):    
+                                 write_file=True, path="pred_nearest_recipient.txt"):
     print("Building char_vector...")
-    def sum_up(row): 
+    def sum_up(row):
         vec = sum([X_train[i] for i in row.list_of_messages_by_index])
         if linalg.norm(vec) != 0:
             vec = vec.astype('float64') / linalg.norm(vec)
         return vec
-        
+
     mails_of_each_recipient['char_vect'] = mails_of_each_recipient.apply(sum_up, axis=1)
-    
+
     return mails_of_each_recipient
-    
-    
+
+
 def predict_by_nearest_recipients(mails_of_each_recipient, test_info, count_vect, training,
-                                      write_file=True, path="pred_nearest_recipient.txt"):   
+                                      write_file=True, path="pred_nearest_recipient.txt"):
     print("Begin prediction...")
     def predict(row):
         msg_vec = count_vect.transform([row.body])
@@ -72,27 +72,26 @@ def predict_by_nearest_recipients(mails_of_each_recipient, test_info, count_vect
         first_10 = [t[1] for t in li_sorted]
         li = [mails_of_each_recipient.loc[idx].name for idx in first_10]
         res = " ".join(li)
-        print(row.name)
         return res
     test_info["recipients"] = test_info.apply(predict, axis=1)
     pred = test_info[["mid","recipients"]]
     if write_file:
         pred.to_csv(path, index=False)
     return pred
-    
+
 if __name__ == "__main__":
-    
+
     read_this_please =\
     """
-    Involved pd.DataFrame : training, training_info, test, test_info, 
+    Involved pd.DataFrame : training, training_info, test, test_info,
                             mails_of_each_recipient
 
-    Essential columns: 
+    Essential columns:
         training['address_book']
         training_info[date', 'body', 'sender',
                       'list_of_recipients']
         test_info[date', 'body', 'sender']
-    column to predict: 
+    column to predict:
         test_info['list_of_recipients']
     """
 
@@ -103,6 +102,6 @@ if __name__ == "__main__":
 #    mails_of_each_recipient = received_mails_of_each_recipient_by_index(training_info_t)
 #    X_train, X_test, count_vect = get_bag_words(training_info_t, training_info_v)
 #    build_char_vector(X_train, mails_of_each_recipient)
-#    
-#    pred = predict_by_nearest_recipients(mails_of_each_recipient, training_info_v, count_vect, training)  
+#
+#    pred = predict_by_nearest_recipients(mails_of_each_recipient, training_info_v, count_vect, training)
 #    score = get_validation_score(training_info_v, pred)
