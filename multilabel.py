@@ -53,7 +53,6 @@ class MultilabelClassifier():
         for i, index in enumerate(inds):
             if debug:
                 print("*" * 50)
-                #print(self.df_test['body'][i])
                 print(self.df_test['list_of_recipients'][i])
 
             aux = []
@@ -159,6 +158,9 @@ def predict_by_multilabel_for_each_sender(training_info_t, training_info_v, trai
 
 
 if __name__ == "__main__":
+    write_submission = False
+
+    # Local score on validation data set
     training, training_info, test, test_info = get_dataframes()
     training_info_t, training_info_v = split_train_test(training_info)
 
@@ -166,6 +168,8 @@ if __name__ == "__main__":
     score = get_validation_score(training_info_v, pred)
     print("Score: ", score)
 
-    #pred_test, models_test = predict_by_multilabel_for_each_sender(training_info, test_info, training)
-    #pred_test = pred_test[['mid', 'recipients']]
-    #pred_test.to_csv("pred_logistic_regression_2.txt", index=False)
+    # writing submission
+    if write_submission:
+        pred_test, models_test = predict_by_multilabel_for_each_sender(training_info, test_info, training)
+        pred_test = pred_test[['mid', 'recipients']]
+        pred_test.to_csv("pred_logistic_regression_2.txt", index=False)
