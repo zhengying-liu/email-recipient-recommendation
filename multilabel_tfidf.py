@@ -84,20 +84,20 @@ class MultilabelClassifier():
     def fit(self, df_train):
         self.df_train = df_train
         X_train = self.feature_extractor_fit_transform(df_train)
-        print("shape of X_train: ", X_train.shape)
+        #print("shape of X_train: ", X_train.shape)
         Y_train = self.df_to_Y(df_train)
-        print("shape of Y_train: ", Y_train.shape)
+        #print("shape of Y_train: ", Y_train.shape)
         self.recipient_frequencies = np.sum(Y_train, axis=0) / np.sum(Y_train)
-        print(self.recipient_frequencies)
-        print("shape of recipient_frequencies: ", self.recipient_frequencies.shape)
+        #print(self.recipient_frequencies)
+        #print("shape of recipient_frequencies: ", self.recipient_frequencies.shape)
         self.classifier_fit(X_train, Y_train)
 
     def predict(self, df_test):
         self.df_test = df_test
         X_test = self.feature_extractor_transform(df_test)
-        print("shape of X_test", X_test.shape)
+        #print("shape of X_test", X_test.shape)
         Y_pred = self.classifier_predict(X_test)
-        print("shape of Y_test", Y_pred.shape)
+        #print("shape of Y_test", Y_pred.shape)
         pred_df = self.Y_to_df(Y_pred)
         return pred_df
 
@@ -108,13 +108,13 @@ def predict_by_multilabel_for_each_sender(training_info_t, training_info_v, vali
     preds = []
     models = []
     validation_scores = np.zeros(125)
-    
+
     for name, group in tqdm(grouped_train):
-        
+
         df_train = group.reset_index()
-        print("shape of df_train: ", df_train.shape)
+        #print("shape of df_train: ", df_train.shape)
         df_test = grouped_test.get_group(name).reset_index()
-        print("shape of df_test: ", df_test.shape)
+        #print("shape of df_test: ", df_test.shape)
 
         model = MultilabelClassifier()
         model.fit(df_train)
@@ -127,9 +127,7 @@ def predict_by_multilabel_for_each_sender(training_info_t, training_info_v, vali
         if validation:
             validation_scores[name] = get_validation_score(df_test, pred_df)
             print("Test score for this sender: ", validation_scores[name])
-            
-        print("""#########################################################""")
-        print("\n\n\n")
+
     pred = pd.concat(preds).sort_values('mid')
     pred = pred.reset_index()[['mid', 'list_of_recipients']]
     return pred, models, validation_scores
