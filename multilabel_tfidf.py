@@ -130,7 +130,11 @@ def predict_by_multilabel_for_each_sender(training_info_t, training_info_v, vali
 
     pred = pd.concat(preds).sort_values('mid')
     pred = pred.reset_index()[['mid', 'list_of_recipients']]
-    return pred, models, validation_scores
+
+    if validation:
+        return pred, models, validation_scores
+    else:
+        return pred, models
 
 
 if __name__ == "__main__":
