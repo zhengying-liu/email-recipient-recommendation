@@ -136,15 +136,16 @@ def predict_by_multilabel_for_each_sender(training_info_t, training_info_v, vali
 
 
 if __name__ == "__main__":
-#    training, training_info, test, test_info = get_dataframes()
-#    training_info_t, training_info_v = split_train_test(training_info, pr_train=0.7)
+    training, training_info, test, test_info = get_dataframes()
+    training_info_t, training_info_v = split_train_test(training_info, pr_train=0.7)
 
+    # get a validation score
     pred, models, validation_scores = predict_by_multilabel_for_each_sender(training_info_t, training_info_v, validation=True)
     result_address_book = pred, models, validation_scores
     score = get_validation_score(training_info_v, pred)
     print("Score: ", score)
 
-#    pred_test, models_test = predict_by_multilabel_for_each_sender(training_info, test_info)
-#    pred_test['recipients'] = pred_test.apply(lambda row: " ".join(row["list_of_recipients"]), axis=1)
-#    pred_test = pred_test[['mid', 'recipients']]
-#    pred_test.to_csv("pred_tf-idf_LinearSVC.csv", index=False)
+    pred_test, models_test = predict_by_multilabel_for_each_sender(training_info, test_info)
+    pred_test['recipients'] = pred_test.apply(lambda row: " ".join(row["list_of_recipients"]), axis=1)
+    pred_test = pred_test[['mid', 'recipients']]
+    pred_test.to_csv("pred_tf-idf_LinearSVC.csv", index=False)
