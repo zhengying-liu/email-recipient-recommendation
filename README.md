@@ -18,7 +18,7 @@ We named our team "450euros", which is incidentally the amount of prize that wil
 - The generated submission files will be in `code/output`
 
 
-### project structure (in `code/`)
+### Project structure (in `code/`)
 
 - `main.py`: contains the code allowing to reproduce all our submissions 
 
