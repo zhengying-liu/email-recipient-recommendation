@@ -15,7 +15,7 @@ from sklearn.tree import DecisionTreeClassifier
 from tqdm import tqdm
 from utils import get_dataframes
 
-from code.evaluation import split_train_test, get_validation_score
+from evaluation import split_train_test, get_validation_score
 
 
 class MultilabelClassifier():

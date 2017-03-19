@@ -8,4 +8,27 @@ Our team consists of four promising master students: Chia-Man, Mario, Salma and 
 We name our team "450euros", which is accidentally the amount of prize that will be awarded to the winning team.
 
 
-### Project Structure :
+### Run 
+
+- run the script `code/install.sh`
+
+- The input `.csv` data files should be in `code/input`
+
+- The generated submission files will be in `code/output`
+
+
+### project structure
+
+- `main.py`:
+
+- `code/bow_knn.py`:
+
+- `word2vec_logistic_regression.py`:
+
+- `tfidf_linearsvc.py`:
+
+- `feature_extraction.py`:
+
+- `evaluation.py` :
+
+

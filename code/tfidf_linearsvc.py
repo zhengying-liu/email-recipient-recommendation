@@ -15,7 +15,7 @@ from sklearn.svm import LinearSVC
 from tqdm import tqdm
 from utils import get_dataframes, clean_raw_text, softmax
 
-from code.evaluation import split_train_test, get_validation_score
+from evaluation import split_train_test, get_validation_score
 
 np.set_printoptions(threshold=np.nan)
 

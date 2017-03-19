@@ -11,7 +11,7 @@ from gensim.models.keyedvectors import KeyedVectors
 from sklearn.feature_extraction.text import CountVectorizer
 from tqdm import tqdm
 
-from code.utils import read_data_info, clean_text_simple
+from utils import read_data_info, clean_text_simple
 
 
 class Word2VecFeatureExtractor:
@@ -36,14 +36,14 @@ class Word2VecFeatureExtractor:
             if cont > 0:
                 ret[index, :] /= cont
         return ret
-        
+
+
 def get_network_features(training_info, received_mails_of_each_recipient):
     s = training_info.list_of_recipients.apply(lambda x: x[:10] if len(x)>10 else x)
     dummies = pd.get_dummies(s.apply(pd.Series), prefix='', prefix_sep='').sum(level=0, axis=1)
     df_asint = dummies.astype(int)
     co_occ = df_asint.T.dot(df_asint)
     return co_occ
-
 
 
 def build_corpus(dic):
