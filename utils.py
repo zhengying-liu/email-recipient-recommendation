@@ -5,28 +5,27 @@ import numpy as np
 import string
 import re
 import itertools
-#import igraph
 import nltk
 import operator
 from nltk.corpus import stopwords
-# requires nltk 3.2.1
 from nltk import pos_tag
+
 
 def clean_text_simple(text, remove_stopwords=True, pos_filtering=True, stemming=True, keep_dash=True):
     if keep_dash:
         punct = string.punctuation.replace('-', '')
     else:
         punct = string.punctuation
-        
+
     text = clean_raw_text(text)
-        
+
     # convert to lower case
     text = text.lower()
     # remove punctuation (preserving intra-word dashes)
     replace_punctuation = str.maketrans(punct, ' ' * len(punct))
     text = text.translate(replace_punctuation)
     # strip extra white space
-    text = re.sub(' +',' ',text)
+    text = re.sub(' +', ' ', text)
     # strip leading and trailing white space
     text = text.strip()
     # tokenize (split based on whitespace)
@@ -40,13 +39,13 @@ def clean_text_simple(text, remove_stopwords=True, pos_filtering=True, stemming=
         for i in range(len(tagged_tokens)):
             item = tagged_tokens[i]
             if (
-            item[1] == 'NN' or
-            item[1] == 'NNS' or
-            item[1] == 'NNP' or
-            item[1] == 'NNPS' or
-            item[1] == 'JJ' or
-            item[1] == 'JJS' or
-            item[1] == 'JJR'
+                                                item[1] == 'NN' or
+                                                item[1] == 'NNS' or
+                                            item[1] == 'NNP' or
+                                        item[1] == 'NNPS' or
+                                    item[1] == 'JJ' or
+                                item[1] == 'JJS' or
+                            item[1] == 'JJR'
             ):
                 tokens_keep.append(item[0])
         tokens = tokens_keep
@@ -66,6 +65,7 @@ def clean_text_simple(text, remove_stopwords=True, pos_filtering=True, stemming=
 
     return tokens
 
+
 def read_data_info(filename="input/training_info.csv", nrows=None):
     if nrows is None:
         info = pd.read_csv(filename, sep=',', header=0)
@@ -81,7 +81,7 @@ def read_data_info(filename="input/training_info.csv", nrows=None):
         recipients = None
 
         info_dict[mid] = {
-            'date' : date,
+            'date': date,
             'body': clean_text_simple(body, stemming=False, keep_dash=False),
         }
 
@@ -92,7 +92,8 @@ def read_data_info(filename="input/training_info.csv", nrows=None):
             info_dict[mid]['recipients'] = recipients
 
     return info_dict
-    
+
+
 def get_dataframes():
     """
     Construct four pd.DataFrame: training, training_info, test, test_info
@@ -109,25 +110,26 @@ def get_dataframes():
     training_info = pd.read_csv(path_to_data + 'training_info.csv', sep=',')
     test = pd.read_csv(path_to_data + 'test_set.csv', sep=',')
     test_info = pd.read_csv(path_to_data + 'test_info.csv', sep=',')
-    
+
     # list of mids in training, test
     print("Constructing list_of_mids...")
     func = lambda row: list(map(int, row.mids.split(' ')))
     training["list_of_mids"] = training.apply(func, axis=1)
     test["list_of_mids"] = test.apply(func, axis=1)
-    
+
     # list of recipients in training_info
     print("Constructing list_of_recipients...")
     func = lambda row: [rec for rec in row.recipients.split(' ') if '@' in rec]
     training_info["list_of_recipients"] = training_info.apply(func, axis=1)
-    
+
     # create an empty column for sender in training_info, test_info
     func = lambda row: ""
-    training_info["sender"] = training_info.apply(func,axis=1)
-    test_info["sender"] = test_info.apply(func,axis=1)
+    training_info["sender"] = training_info.apply(func, axis=1)
+    test_info["sender"] = test_info.apply(func, axis=1)
 
     # address book in training, test
     print("Constructing address book...")
+
     def count_contacted_recipients(row):
         list_of_mids = row["list_of_mids"]
         res = dict()
@@ -142,15 +144,16 @@ def get_dataframes():
                 else:
                     res[rec] += 1
         return res
-    training["address_book"]= training.apply(count_contacted_recipients,axis=1)
+
+    training["address_book"] = training.apply(count_contacted_recipients, axis=1)
     test["address_book"] = training["address_book"].copy()
-    
+
     # add number of emails sent by each sender
     training["number_of_emails"] = training.apply(lambda row: len(row.list_of_mids), axis=1)
-    
+
     # add number of recipients contacted by each sender
     training["number_of_recipients"] = training.apply(lambda row: len(row.address_book), axis=1)
-    
+
     # add sender to test_info
     print("Add sender to test_info...")
     for index, row in test.iterrows():
@@ -158,8 +161,9 @@ def get_dataframes():
         for mid in list_of_mids:
             idx = np.where(test_info["mid"] == mid)[0][0]
             test_info.loc[idx, "sender"] = row.name
-    
+
     return training, training_info, test, test_info
+
 
 def received_mails_of_each_recipient_by_index(training_info_train):
     """
@@ -179,17 +183,18 @@ def received_mails_of_each_recipient_by_index(training_info_train):
                 recipient_mids_dict[recipient] = [[index]]
     mails_of_each_recipient = pd.DataFrame(recipient_mids_dict).T
     mails_of_each_recipient.columns = ['list_of_messages_by_index']
-    mails_of_each_recipient['number_of_received_messages'] =\
-                           mails_of_each_recipient.apply(lambda row: 
-                               len(row['list_of_messages_by_index']),axis=1)                        
+    mails_of_each_recipient['number_of_received_messages'] = \
+        mails_of_each_recipient.apply(lambda row:
+                                      len(row['list_of_messages_by_index']), axis=1)
     return mails_of_each_recipient
+
 
 def clean_raw_text(raw_text, stemming=True):
     """
     Given a string raw_text (e.g. the body of a mail), clean it and return a 
     string.
     """
-    
+
     # First remove inline JavaScript/CSS:
     text = re.sub(r"(?is)<(script|style).*?>.*?()", " ", raw_text)
     # Remove url
@@ -219,8 +224,9 @@ def clean_raw_text(raw_text, stemming=True):
     text = text.strip()
     # convert to lower case
     text = text.lower()
-        
+
     return text
+
 
 def find_common_recipients(training):
     list_of_address_book = []
@@ -231,18 +237,16 @@ def find_common_recipients(training):
     for i in range(n):
         for key in list_of_address_book[i]:
             if key not in recipients_in_several_address_book:
-                for j in range(i+1,n):
+                for j in range(i + 1, n):
                     if key in list_of_address_book[j]:
                         if key not in recipients_in_several_address_book:
-                            recipients_in_several_address_book[key] = {i,j}
+                            recipients_in_several_address_book[key] = {i, j}
                         else:
                             recipients_in_several_address_book[key].add(j)
     return list_of_address_book, recipients_in_several_address_book
+
 
 def softmax(Y, axis=-1):
     e = np.exp(Y - np.max(Y, axis=axis, keepdims=True))
     return e / np.sum(e, axis=axis, keepdims=True)
 
-if __name__ == "__main__":
-   list_of_address_book, recipients_in_several_address_book =\
-       find_common_recipients(training)
