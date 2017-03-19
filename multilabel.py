@@ -11,7 +11,6 @@ import numpy as np
 from feature_extraction import Word2VecFeatureExtractor
 from utils import get_dataframes
 from evaluation import split_train_test, get_validation_score
-from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.svm import LinearSVC
 from sklearn.multiclass import OneVsRestClassifier
@@ -90,9 +89,8 @@ class MultilabelClassifier():
         return X_test
 
     def classifier_fit(self, X_train, Y_train):
-        #self.classifier = OneVsRestClassifier(DecisionTreeClassifier(max_depth=30, random_state=0))
+        self.classifier = OneVsRestClassifier(DecisionTreeClassifier(max_depth=30, random_state=0))
         #self.classifier = OneVsRestClassifier(GradientBoostingClassifier(n_estimators=100, max_depth=9))
-        self.classifier = OneVsRestClassifier(LogisticRegression(C=1))
         self.classifier.fit(X_train, Y_train)
 
     def classifier_predict(self, X_test):
@@ -116,7 +114,7 @@ class MultilabelClassifier():
         return pred_df
 
 
-def predict_by_multilabel_for_each_sender(training_info_t, training_info_v, training, validation=False):
+def predict_by_multilabel_for_each_sender(training_info_t, training_info_v, validation=False):
     grouped_train = training_info_t.groupby("sender")
     grouped_test = training_info_v.groupby("sender")
     preds = []
@@ -127,13 +125,12 @@ def predict_by_multilabel_for_each_sender(training_info_t, training_info_v, trai
     for name, group in tqdm(grouped_train):
         df_train = group.reset_index()
         df_test = grouped_test.get_group(name).reset_index()
-        address_book = training.address_book[name]
 
         model = MultilabelClassifier(feature_extractor=feature_extractor)
         model.fit(df_train)
 
         # pred_df: pd.DataFrame with columns ['mid', 'list_of_recipients']
-        pred_df = model.predict(df_test, address_book)
+        pred_df = model.predict(df_test, training.iloc[name].address_book)
         preds.append(pred_df)
         models.append(model)
 
@@ -164,7 +161,7 @@ if __name__ == "__main__":
     training, training_info, test, test_info = get_dataframes()
     training_info_t, training_info_v = split_train_test(training_info)
 
-    pred, models = predict_by_multilabel_for_each_sender(training_info_t, training_info_v, training, validation=True)
+    pred, models = predict_by_multilabel_for_each_sender(training_info_t, training_info_v, validation=True)
     score = get_validation_score(training_info_v, pred)
     print("Score: ", score)
 
@@ -172,4 +169,4 @@ if __name__ == "__main__":
     if write_submission:
         pred_test, models_test = predict_by_multilabel_for_each_sender(training_info, test_info, training)
         pred_test = pred_test[['mid', 'recipients']]
-        pred_test.to_csv("pred_logistic_regression_2.txt", index=False)
+        pred_test.to_csv("output/pred_logistic_regression_2.txt", index=False)

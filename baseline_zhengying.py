@@ -22,7 +22,7 @@ def predict_by_nearest_message(training_info, test_info, write_file=False,
     X_test = count_vect.transform(test_info.body)
     similarity = X_test.dot(X_train.T).toarray()
     indexes_of_nearest_message = similarity.argmax(axis=1)
-    # for each row of test_info, return recipients of the nearest message
+    # for each row of test_info, return recipients of the nearest message 
     # in training_info
     func = lambda row: training_info.loc[indexes_of_nearest_message[row.name]] \
         ["recipients"]
@@ -43,7 +43,7 @@ def get_bag_words(training_info, test_info):
 
 
 def build_char_vector(X_train, mails_of_each_recipient,
-                      write_file=True, path="pred_nearest_recipient.txt"):
+                  write_file=True, path="pred_nearest_recipient.txt"):
     print("Building char_vector...")
 
     def sum_up(row):
@@ -58,7 +58,7 @@ def build_char_vector(X_train, mails_of_each_recipient,
 
 
 def predict_by_nearest_recipients(mails_of_each_recipient, test_info, count_vect, training,
-                                  write_file=True, path="pred_nearest_recipient.txt"):
+                                  write_file=True, path="output/pred_nearest_recipient.txt"):
     print("Begin prediction...")
 
     def predict(row):
@@ -75,6 +75,7 @@ def predict_by_nearest_recipients(mails_of_each_recipient, test_info, count_vect
         first_10 = [t[1] for t in li_sorted]
         li = [mails_of_each_recipient.loc[idx].name for idx in first_10]
         res = " ".join(li)
+        print(row.name)
         return res
 
     test_info["recipients"] = test_info.apply(predict, axis=1)
@@ -108,3 +109,5 @@ if __name__ == "__main__":
 
     pred = predict_by_nearest_recipients(mails_of_each_recipient, training_info_v, count_vect, training)
     score = get_validation_score(training_info_v, pred)
+
+    predict_by_nearest_recipients(mails_of_each_recipient, test_info, count_vect, training)
