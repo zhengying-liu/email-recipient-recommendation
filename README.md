@@ -10,7 +10,7 @@ We named our team "450euros", which is incidentally the amount of prize that wil
 
 ### Run 
 
-- run the script `code/install.sh`
+- run the script `code/install.sh` to download pre-trained weights of Word2vec feature
 
 - The input `.csv` data files should be in `code/input`
 
