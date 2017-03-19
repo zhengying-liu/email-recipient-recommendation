@@ -99,10 +99,12 @@ if __name__ == "__main__":
 
 #    Run following lines only once:
     training, training_info, test, test_info = get_dataframes()
-#    training_info_t, training_info_v = split_train_test(training_info)
-#    mails_of_each_recipient = received_mails_of_each_recipient_by_index(training_info_t)
-#    X_train, X_test, count_vect = get_bag_words(training_info_t, training_info_v)
-#    build_char_vector(X_train, mails_of_each_recipient)
-#    
-#    pred = predict_by_nearest_recipients(mails_of_each_recipient, training_info_v, count_vect, training)  
-#    score = get_validation_score(training_info_v, pred)
+    training_info_t, training_info_v = split_train_test(training_info)
+    mails_of_each_recipient = received_mails_of_each_recipient_by_index(training_info_t)
+    X_train, X_test, count_vect = get_bag_words(training_info_t, training_info_v)
+    build_char_vector(X_train, mails_of_each_recipient)
+    
+    pred = predict_by_nearest_recipients(mails_of_each_recipient, training_info_v, count_vect, training)  
+    score = get_validation_score(training_info_v, pred)
+    
+    predict_by_nearest_recipients(mails_of_each_recipient, test_info, count_vect, training)
