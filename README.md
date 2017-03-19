@@ -5,7 +5,7 @@ In this challenge, we are asked to develop such a system, which, given the conte
 
 Our team consists of four promising master students: Chia-Man, Mario, Salma and Zhengying.
 
-We name our team "450euros", which is accidentally the amount of prize that will be awarded to the winning team.
+We named our team "450euros", which is incidentally the amount of prize that will be awarded to the winning team.
 
 
 ### Run 
@@ -17,11 +17,11 @@ We name our team "450euros", which is accidentally the amount of prize that will
 - The generated submission files will be in `code/output`
 
 
-### project structure
+### project structure (in `code/`)
 
 - `main.py`: contains the code allowing to reproduce all our submissions 
 
-- `code/bow_knn.py`: implements a k-nearest-neighbors model with Bag-Of-Words features
+- `bow_knn.py`: implements a k-nearest-neighbors model with Bag-Of-Words features
 
 - `word2vec_logistic_regression.py`: implements a multilabel Logistic Regression with word2vec, using only the recipients in the address book
 
