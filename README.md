@@ -19,16 +19,17 @@ We name our team "450euros", which is accidentally the amount of prize that will
 
 ### project structure
 
-- `main.py`:
+- `main.py`: contains the code allowing to reproduce all our submissions 
 
-- `code/bow_knn.py`:
+- `code/bow_knn.py`: implements a k-nearest-neighbors model with Bag-Of-Words features
 
-- `word2vec_logistic_regression.py`:
+- `word2vec_logistic_regression.py`: implements a multilabel Logistic Regression with word2vec, using only the recipients in the address book
 
-- `tfidf_linearsvc.py`:
+- `tfidf_linearsvc.py`: implements a multilabel SVC with tf-idf features, using only the recipients in the address book
 
-- `feature_extraction.py`:
+- `feature_extraction.py`: implements the Word2Vec feature extractor
 
-- `evaluation.py` :
+- `evaluation.py` : contains the functions designed for evaluating the performance locally
 
+- `*.ipynb` : notebooks containing the exploration of the emails, and analysis of the predictions outputted by our models
 
